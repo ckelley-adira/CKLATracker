@@ -27,12 +27,17 @@ This tracker addresses the pain points of high-volume manual data entry, cogniti
 | `scripts/ImportExport.gs` | Bulk CSV import, data export, backup utilities |
 | `scripts/HeatMapFormatter.gs` | **Phase 1:** Applies green/yellow/red conditional formatting to Roster View tabs |
 | `scripts/SparklineTrend.gs` | **Phase 1:** Fills empty Trend columns on Summary Charts with SPARKLINE formulas |
+| `scripts/FormIntegration.gs` | **Phase 2:** Google Form creation, form-to-sheet mapping, automated response import |
+| `scripts/NavigationHub.gs` | **Phase 2:** Builds a navigation hub tab with hyperlinks to all tabs and tools |
+| `scripts/TeacherSheetSync.gs` | **Phase 2:** Per-teacher lightweight input sheets with sync-back to master |
+| `scripts/UnitTemplateEngine.gs` | **Phase 2:** Standardized unit templates and automated tab generation |
+| `docs/phase2_onboarding.md` | **Phase 2:** Onboarding guide for teachers on new input workflows |
 
 ---
 
 ## Apps Script System
 
-The five core script files provide a complete input and reporting layer on top of the existing Google Sheets workbooks. Install them into your Google Sheet's Apps Script editor (see [Installation](#installation)) to unlock the **CKLA Tools** menu.
+The five core script files provide a complete input and reporting layer on top of the existing Google Sheets workbooks. Phase 2 adds four more scripts for form integration, navigation, teacher workflows, and unit generation. Install them into your Google Sheet's Apps Script editor (see [Installation](#installation)) to unlock the **CKLA Tools** menu.
 
 | Script | Key Functions |
 |---|---|
@@ -41,6 +46,15 @@ The five core script files provide a complete input and reporting layer on top o
 | `ScoreEntryUI.html` | Sidebar form served by `HtmlService` — cascading dropdowns, live validation, auto-advance |
 | `DashboardEngine.gs` | `refreshAllSummaries()`, `getStudentSummaryData()`, `buildStudentReportHTML_()` |
 | `ImportExport.gs` | `importCSVScores()`, `exportGradeData()`, `validateAllData()`, `backupDataSheets()` |
+
+### Phase 2 Scripts
+
+| Script | Key Functions |
+|---|---|
+| `FormIntegration.gs` | `createAssessmentForm()`, `onFormSubmit()`, `listAssessmentForms()`, `showFormManagerDialog()` |
+| `NavigationHub.gs` | `buildNavigationHub()`, `navigateToTab()` |
+| `TeacherSheetSync.gs` | `createTeacherInputSheet()`, `syncAllTeacherInputSheets()`, `showCreateTeacherSheetDialog()`, `cleanupTeacherInputSheets()` |
+| `UnitTemplateEngine.gs` | `generateUnitTab()`, `showUnitGeneratorDialog()`, `buildTabName_()`, `columnToLetter_()` |
 
 The script layer **writes to the same cells** teachers currently edit manually, so all existing AVERAGEIFS, COUNTIFS, quintile formulas, and summary charts continue to auto-recalculate with no structural changes required.
 
@@ -66,7 +80,7 @@ These improvements can be applied to the existing workbooks immediately, with no
 Hide tabs, color-code, heat map, protect formulas, data validation, sparklines, checkboxes. No structural changes — apply directly to existing workbooks.
 
 ### Phase 2 — Input Overhaul *(1–2 weeks)*
-Deploy the Apps Script system. Sidebar-based score entry form, per-teacher input sheets, navigation hub tab, standardized unit templates, CSV import, and backup utilities.
+Deploy the Apps Script system. Sidebar-based score entry form, Google Form integration, per-teacher input sheets, navigation hub tab, standardized unit templates, CSV import, and backup utilities. See [Phase 2 Onboarding Guide](docs/phase2_onboarding.md) for teacher-facing documentation.
 
 ### Phase 3 — Reporting & Dashboards *(2–4 weeks)*
 Student progress reports (historical view across all units), skill drill-downs by section, teacher action summaries highlighting students below mastery thresholds. Built with Apps Script HTML Service — no external BI tools required.
@@ -89,10 +103,14 @@ To install the Apps Script files into a Google Sheet:
 7. Repeat for `ImportExport` (paste `scripts/ImportExport.gs`)
 8. Repeat for `HeatMapFormatter` (paste `scripts/HeatMapFormatter.gs`)
 9. Repeat for `SparklineTrend` (paste `scripts/SparklineTrend.gs`)
-10. Click **+** → **HTML** → name it `ScoreEntryUI` → paste `scripts/ScoreEntryUI.html`
-11. Click **Save** (Ctrl+S / Cmd+S)
-12. Reload the spreadsheet — a new **CKLA Tools** menu will appear in the menu bar
-13. First run: click **CKLA Tools → Enter Assessment Scores** and authorize when prompted
+10. Repeat for `FormIntegration` (paste `scripts/FormIntegration.gs`)
+11. Repeat for `NavigationHub` (paste `scripts/NavigationHub.gs`)
+12. Repeat for `TeacherSheetSync` (paste `scripts/TeacherSheetSync.gs`)
+13. Repeat for `UnitTemplateEngine` (paste `scripts/UnitTemplateEngine.gs`)
+14. Click **+** → **HTML** → name it `ScoreEntryUI` → paste `scripts/ScoreEntryUI.html`
+15. Click **Save** (Ctrl+S / Cmd+S)
+16. Reload the spreadsheet — a new **CKLA Tools** menu will appear in the menu bar
+17. First run: click **CKLA Tools → Enter Assessment Scores** and authorize when prompted
 
 > **Note on authorization:** The first time any function runs, Google will ask you to authorize the script. Click **Advanced → Go to CKLA Skills Tracking (unsafe) → Allow**. This is normal for custom Google Workspace scripts — it needs read/write access to your spreadsheet data.
 
