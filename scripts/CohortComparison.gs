@@ -194,16 +194,6 @@ function getCohortComparisonData(grade, demoField) {
 
 
 /**
- * Internal: generate a consistent color for a cohort group.
- * Uses a predefined palette with enough variation for comparison.
- */
-var COHORT_COLORS_ = [
-  '#1a73e8', '#ea4335', '#34a853', '#fbbc04', '#9334e6',
-  '#e8710a', '#46bdc6', '#7baaf7', '#f07b72', '#57bb8a'
-];
-
-
-/**
  * Internal: build the HTML for the Cohort Comparison dialog.
  */
 function buildCohortComparisonHTML_() {
@@ -224,12 +214,13 @@ function buildCohortComparisonHTML_() {
     '<script>' +
     'var cohortColors=["#1a73e8","#ea4335","#34a853","#fbbc04","#9334e6",' +
     '"#e8710a","#46bdc6","#7baaf7","#f07b72","#57bb8a"];' +
+    'function esc(s){var d=document.createElement("div");d.appendChild(document.createTextNode(s));return d.innerHTML;}' +
     'function loadDemoFields(){' +
     'google.script.run.withSuccessHandler(function(fields){' +
     'var sel=document.getElementById("ccDemo");' +
-    'if(fields.length===0){sel.innerHTML="<option value=\\'\\'>No demographic fields found</option>";return;}' +
+    'if(fields.length===0){sel.innerHTML="";var opt=document.createElement("option");opt.value="";opt.textContent="No demographic fields found";sel.appendChild(opt);return;}' +
     'sel.innerHTML="";' +
-    'fields.forEach(function(f){sel.innerHTML+="<option value=\\'"+f+"\\'>"+f+"</option>";});' +
+    'fields.forEach(function(f){var opt=document.createElement("option");opt.value=f;opt.textContent=f;sel.appendChild(opt);});' +
     '}).getDemographicFields();}' +
     'function generateComparison(){' +
     'var g=document.getElementById("ccGrade").value;' +
@@ -247,16 +238,16 @@ function buildCohortComparisonHTML_() {
     'groups.forEach(function(g,i){' +
     'h+="<span style=\\'display:inline-block;margin-right:12px;font-size:12px;\\'>"' +
     '+"<span style=\\'display:inline-block;width:12px;height:12px;background:"+cohortColors[i%cohortColors.length]+";border-radius:2px;margin-right:4px;vertical-align:middle;\\'></span>"' +
-    '+g+"</span>";});' +
+    '+esc(g)+"</span>";});' +
     'h+="</div>";' +
     // Simple bar chart per unit
     'h+="<table style=\\'width:100%;border-collapse:collapse;font-size:12px;\\'>";' +
     'h+="<tr style=\\'background:#1a73e8;color:white;\\'><th style=\\'padding:6px;text-align:left;\\'>Unit</th>";' +
-    'groups.forEach(function(g){h+="<th style=\\'padding:6px;\\'>"+g+"</th>";});' +
+    'groups.forEach(function(g){h+="<th style=\\'padding:6px;\\'>"+esc(g)+"</th>";});' +
     'h+="</tr>";' +
     'if(data.units){data.units.forEach(function(unit,ui){' +
     'h+="<tr>";' +
-    'h+="<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+unit+"</td>";' +
+    'h+="<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(unit)+"</td>";' +
     'groups.forEach(function(g,gi){' +
     'var ua=data.groups[g].unitAvgs[ui];' +
     'var val=ua&&ua.avgPct!==null?ua.avgPct+"% <span style=\\'font-size:10px;color:#888;\\'>(n="+ua.count+")</span>":"—";' +
@@ -272,11 +263,11 @@ function buildCohortComparisonHTML_() {
     '+"<th style=\\'padding:6px;\\'>Change</th></tr>";' +
     'groups.forEach(function(g,gi){' +
     'var avgs=data.groups[g].unitAvgs.filter(function(u){return u.avgPct!==null;});' +
-    'if(avgs.length<2){h+="<tr><td style=\\'padding:4px 6px;\\'>"+g+"</td><td colspan=3 style=\\'text-align:center;\\'>Insufficient data</td></tr>";return;}' +
+    'if(avgs.length<2){h+="<tr><td style=\\'padding:4px 6px;\\'>"+esc(g)+"</td><td colspan=3 style=\\'text-align:center;\\'>Insufficient data</td></tr>";return;}' +
     'var first=avgs[0].avgPct;var last=avgs[avgs.length-1].avgPct;var change=last-first;' +
     'var arrow=change>0?"▲":change<0?"▼":"—";' +
     'var color=change>0?"#137333":change<0?"#c5221f":"#555";' +
-    'h+="<tr><td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+g+"</td>"' +
+    'h+="<tr><td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(g)+"</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+first+"%</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+last+"%</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;color:"+color+";font-weight:bold;\\'>"+arrow+" "+(change>=0?"+":"")+change+"%</td></tr>";});' +

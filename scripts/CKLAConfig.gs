@@ -188,6 +188,42 @@ function getStudentsForTeacher(tabName, teacher) {
 }
 
 /**
+ * Build section ranges from the section header row.
+ * Each non-empty cell starts a new section that spans until
+ * the column before the next non-empty cell (or end of row).
+ *
+ * Shared utility used by SkillDrillDown.gs and TeacherActionReport.gs.
+ *
+ * @param {Array} headerRow  Array of section header values
+ * @returns {Array<{name: string, startOffset: number, endOffset: number}>}
+ */
+function buildSectionRanges_(headerRow) {
+  var sections = [];
+  var currentName = '';
+  var startIdx = -1;
+
+  for (var i = 0; i < headerRow.length; i++) {
+    var val = String(headerRow[i] == null ? '' : headerRow[i]).trim();
+    if (val !== '') {
+      // Close previous section
+      if (currentName && startIdx >= 0) {
+        sections.push({ name: currentName, startOffset: startIdx, endOffset: i - 1 });
+      }
+      currentName = val;
+      startIdx = i;
+    }
+  }
+
+  // Close last section
+  if (currentName && startIdx >= 0) {
+    sections.push({ name: currentName, startOffset: startIdx, endOffset: headerRow.length - 1 });
+  }
+
+  return sections;
+}
+
+
+/**
  * Find a student's row number in a unit tab by name.
  */
 function findStudentRow(tabName, studentName) {

@@ -107,6 +107,7 @@ function getSkillDrillDownData(grade, teacher) {
         // Sum earned points and possible points for this section
         var earned = 0;
         var possible = 0;
+        var hasNumericScore = false;
 
         for (var c = sec.startOffset; c <= sec.endOffset; c++) {
           var pts = pointsPossible[c];
@@ -115,10 +116,11 @@ function getSkillDrillDownData(grade, teacher) {
           var val = scoreData[r][c];
           if (val !== '' && val !== null && !isNaN(Number(val))) {
             earned += Number(val);
+            hasNumericScore = true;
           }
         }
 
-        if (possible === 0) continue;
+        if (possible === 0 || !hasNumericScore) continue;
 
         var pct = Math.round((earned / possible) * 100);
         totalPct += pct;
@@ -151,40 +153,6 @@ function getSkillDrillDownData(grade, teacher) {
 
 
 /**
- * Build section ranges from the section header row.
- * Each non-empty cell starts a new section that spans until
- * the column before the next non-empty cell (or end of row).
- *
- * @param {Array} headerRow  Array of section header values
- * @returns {Array<{name: string, startOffset: number, endOffset: number}>}
- */
-function buildSectionRanges_(headerRow) {
-  var sections = [];
-  var currentName = '';
-  var startIdx = -1;
-
-  for (var i = 0; i < headerRow.length; i++) {
-    var val = String(headerRow[i] == null ? '' : headerRow[i]).trim();
-    if (val !== '') {
-      // Close previous section
-      if (currentName && startIdx >= 0) {
-        sections.push({ name: currentName, startOffset: startIdx, endOffset: i - 1 });
-      }
-      currentName = val;
-      startIdx = i;
-    }
-  }
-
-  // Close last section
-  if (currentName && startIdx >= 0) {
-    sections.push({ name: currentName, startOffset: startIdx, endOffset: headerRow.length - 1 });
-  }
-
-  return sections;
-}
-
-
-/**
  * Get a cross-unit skill summary identifying the weakest sections
  * across all units for a grade. Useful for targeting interventions.
  *
@@ -198,11 +166,12 @@ function getWeakestSkillsSummary(grade) {
   data.units.forEach(function(unit) {
     unit.sections.forEach(function(sec) {
       if (!sectionTotals[sec.name]) {
-        sectionTotals[sec.name] = { sumPct: 0, count: 0, totalBelow60: 0 };
+        sectionTotals[sec.name] = { weightedSum: 0, totalStudents: 0, totalBelow60: 0, unitCount: 0 };
       }
-      sectionTotals[sec.name].sumPct += sec.avgPct;
-      sectionTotals[sec.name].count++;
+      sectionTotals[sec.name].weightedSum += sec.avgPct * sec.studentCount;
+      sectionTotals[sec.name].totalStudents += sec.studentCount;
       sectionTotals[sec.name].totalBelow60 += sec.below60;
+      sectionTotals[sec.name].unitCount++;
     });
   });
 
@@ -210,8 +179,8 @@ function getWeakestSkillsSummary(grade) {
     var t = sectionTotals[name];
     return {
       section: name,
-      avgPct: t.count > 0 ? Math.round(t.sumPct / t.count) : 0,
-      unitCount: t.count,
+      avgPct: t.totalStudents > 0 ? Math.round(t.weightedSum / t.totalStudents) : 0,
+      unitCount: t.unitCount,
       totalBelow60: t.totalBelow60
     };
   });
@@ -245,12 +214,22 @@ function buildSkillDrillDownHTML_() {
     'Show Weakest Skills Summary</button>' +
     '<div id="ddOutput" style="max-height:380px;overflow-y:auto;"></div>' +
     '<script>' +
+    'function esc(s){var d=document.createElement("div");d.appendChild(document.createTextNode(s));return d.innerHTML;}' +
     'function loadTeachers(){' +
     'var g=document.getElementById("ddGrade").value;' +
     'google.script.run.withSuccessHandler(function(teachers){' +
     'var sel=document.getElementById("ddTeacher");' +
-    'sel.innerHTML="<option value=\\'ALL\\'>All Teachers</option>";' +
-    'teachers.forEach(function(t){sel.innerHTML+="<option value=\\'"+t+"\\'>"+t+"</option>";});' +
+    'sel.innerHTML="";' +
+    'var defaultOpt=document.createElement("option");' +
+    'defaultOpt.value="ALL";' +
+    'defaultOpt.textContent="All Teachers";' +
+    'sel.appendChild(defaultOpt);' +
+    'teachers.forEach(function(t){' +
+    'var opt=document.createElement("option");' +
+    'opt.value=t;' +
+    'opt.textContent=t;' +
+    'sel.appendChild(opt);' +
+    '});' +
     '}).getTeachersForGrade(g);}' +
     'function runDrillDown(){' +
     'var g=document.getElementById("ddGrade").value;' +
@@ -261,7 +240,7 @@ function buildSkillDrillDownHTML_() {
     'if(!data.units||data.units.length===0){html="<p>No data found.</p>";' +
     'document.getElementById("ddOutput").innerHTML=html;return;}' +
     'data.units.forEach(function(u){' +
-    'html+="<h4 style=\\'margin:12px 0 4px;color:#333;\\'>"+u.unit+"</h4>";' +
+    'html+="<h4 style=\\'margin:12px 0 4px;color:#333;\\'>"+esc(u.unit)+"</h4>";' +
     'html+="<table style=\\'width:100%;border-collapse:collapse;font-size:12px;\\'>";' +
     'html+="<tr style=\\'background:#1a73e8;color:white;\\'>"' +
     '+"<th style=\\'padding:6px;text-align:left;\\'>Section</th>"' +
@@ -273,7 +252,7 @@ function buildSkillDrillDownHTML_() {
     'u.sections.forEach(function(s){' +
     'var bg=s.avgPct>=80?"#e6f4ea":s.avgPct>=60?"#fef7e0":"#fce8e6";' +
     'html+="<tr style=\\'background:"+bg+"\\'>"' +
-    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+s.name+"</td>"' +
+    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(s.name)+"</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+s.avgPct+"%</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+s.above80+"</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+s.at60to79+"</td>"' +
@@ -286,7 +265,7 @@ function buildSkillDrillDownHTML_() {
     'var g=document.getElementById("ddGrade").value;' +
     'document.getElementById("ddOutput").innerHTML="<p>Analyzing…</p>";' +
     'google.script.run.withSuccessHandler(function(data){' +
-    'var html="<h4 style=\\'margin:8px 0;color:#ea8600;\\'>Weakest Skills — "+g+"</h4>";' +
+    'var html="<h4 style=\\'margin:8px 0;color:#ea8600;\\'>Weakest Skills — "+esc(g)+"</h4>";' +
     'html+="<table style=\\'width:100%;border-collapse:collapse;font-size:12px;\\'>";' +
     'html+="<tr style=\\'background:#ea8600;color:white;\\'>"' +
     '+"<th style=\\'padding:6px;text-align:left;\\'>Section</th>"' +
@@ -296,7 +275,7 @@ function buildSkillDrillDownHTML_() {
     'data.forEach(function(s){' +
     'var bg=s.avgPct>=80?"#e6f4ea":s.avgPct>=60?"#fef7e0":"#fce8e6";' +
     'html+="<tr style=\\'background:"+bg+"\\'>"' +
-    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+s.section+"</td>"' +
+    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(s.section)+"</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+s.avgPct+"%</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+s.unitCount+"</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;font-weight:bold;color:#c5221f;\\'>"+s.totalBelow60+"</td></tr>";});' +

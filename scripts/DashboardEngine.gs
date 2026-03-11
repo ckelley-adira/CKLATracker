@@ -354,13 +354,16 @@ function buildStudentProgressHTML_() {
     'Show Progress</button>' +
     '<div id="spOutput" style="max-height:400px;overflow-y:auto;"></div>' +
     '<script>' +
+    'function esc(s){var d=document.createElement("div");d.appendChild(document.createTextNode(s));return d.innerHTML;}' +
     'function loadStudents(){' +
     'var g=document.getElementById("spGrade").value;' +
     'var sel=document.getElementById("spStudent");' +
-    'sel.innerHTML="<option value=\\'\\'>Loading…</option>";' +
+    'sel.innerHTML="";' +
+    'var lo=document.createElement("option");lo.value="";lo.textContent="Loading…";sel.appendChild(lo);' +
     'google.script.run.withSuccessHandler(function(names){' +
-    'sel.innerHTML="<option value=\\'\\'>Select Student…</option>";' +
-    'names.forEach(function(n){sel.innerHTML+="<option value=\\'"+n+"\\'>"+n+"</option>";});' +
+    'sel.innerHTML="";' +
+    'var def=document.createElement("option");def.value="";def.textContent="Select Student…";sel.appendChild(def);' +
+    'names.forEach(function(n){var opt=document.createElement("option");opt.value=n;opt.textContent=n;sel.appendChild(opt);});' +
     '}).getStudentListForGrade(g);}' +
     'function showProgress(){' +
     'var g=document.getElementById("spGrade").value;' +
@@ -372,8 +375,8 @@ function buildStudentProgressHTML_() {
     'var h="";' +
     // Student header
     'h+="<div style=\\'background:#e8f0fe;padding:12px;border-radius:8px;margin-bottom:12px;\\'>";' +
-    'h+="<h4 style=\\'margin:0;color:#1a73e8;\\'>"+d.student+"</h4>";' +
-    'h+="<p style=\\'margin:4px 0 0;font-size:13px;\\'>Trend: <strong>"+d.trend+"</strong></p></div>";' +
+    'h+="<h4 style=\\'margin:0;color:#1a73e8;\\'>"+esc(d.student)+"</h4>";' +
+    'h+="<p style=\\'margin:4px 0 0;font-size:13px;\\'>Trend: <strong>"+esc(d.trend)+"</strong></p></div>";' +
     // Mastery breakdown
     'var mb=d.masteryBreakdown;' +
     'h+="<div style=\\'display:flex;gap:8px;margin-bottom:12px;text-align:center;font-size:12px;\\'>";' +
@@ -391,7 +394,7 @@ function buildStudentProgressHTML_() {
     'var color=u.pct===null?"#ccc":u.pct>=80?"#34a853":u.pct>=60?"#fbbc04":"#ea4335";' +
     'h+="<div style=\\'margin-bottom:6px;\\'>"' +
     '+"<div style=\\'display:flex;justify-content:space-between;font-size:12px;\\'>"' +
-    '+"<span>"+label+"</span><span>"+(u.pct!==null?u.pct+"%":"—")+"</span></div>"' +
+    '+"<span>"+esc(label)+"</span><span>"+(u.pct!==null?u.pct+"%":"—")+"</span></div>"' +
     '+"<div style=\\'background:#eee;border-radius:4px;height:14px;overflow:hidden;\\'>"' +
     '+"<div style=\\'background:"+color+";height:100%;width:"+pct+"%;border-radius:4px;\\'></div>"' +
     '+"</div></div>";});' +
@@ -403,9 +406,9 @@ function buildStudentProgressHTML_() {
     'd.units.forEach(function(u){' +
     'var bg=u.pct===null?"#f5f5f5":u.pct>=80?"#e6f4ea":u.pct>=60?"#fef7e0":"#fce8e6";' +
     'h+="<tr style=\\'background:"+bg+"\\'>"' +
-    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+u.unit+"</td>"' +
+    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(u.unit)+"</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+(u.pct!==null?u.pct+"%":"—")+"</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+u.quintile+"</td></tr>";});' +
+    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+esc(u.quintile)+"</td></tr>";});' +
     'h+="</table>";' +
     'document.getElementById("spOutput").innerHTML=h;' +
     '}).getIndividualStudentProgress(g,s);}' +

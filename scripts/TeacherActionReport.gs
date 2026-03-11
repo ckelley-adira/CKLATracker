@@ -67,6 +67,8 @@ function getTeacherActionReportData(grade, teacher) {
 
   // Track per-student performance across units
   var studentPerf = {};
+  // Track all rostered students for this teacher (regardless of scores)
+  var rosteredStudents = {};
 
   tabs.forEach(function(tabName) {
     var sheet = ss.getSheetByName(tabName);
@@ -97,6 +99,9 @@ function getTeacherActionReportData(grade, teacher) {
       var pct = row[4]; // offset 4 = overall %
 
       if (!student || t !== teacher) return;
+
+      // Track rostered student regardless of whether they have scores
+      rosteredStudents[student] = true;
 
       if (pct !== '' && pct !== null && !isNaN(Number(pct))) {
         var pctNum = Math.round(Number(pct) * 100);
@@ -159,6 +164,7 @@ function getTeacherActionReportData(grade, teacher) {
           teacherRows.forEach(function(r) {
             var earned = 0;
             var possible = 0;
+            var hasNumericScore = false;
             for (var c = sec.startOffset; c <= sec.endOffset; c++) {
               var pts = pointsPossible[c];
               if (pts === '' || pts === null || isNaN(Number(pts)) || Number(pts) === 0) continue;
@@ -166,9 +172,10 @@ function getTeacherActionReportData(grade, teacher) {
               var val = scoreData[r][c];
               if (val !== '' && val !== null && !isNaN(Number(val))) {
                 earned += Number(val);
+                hasNumericScore = true;
               }
             }
-            if (possible > 0) {
+            if (possible > 0 && hasNumericScore) {
               secTotal += Math.round((earned / possible) * 100);
               secCount++;
             }
@@ -189,7 +196,7 @@ function getTeacherActionReportData(grade, teacher) {
 
   // Build class summary from student performance data
   var studentNames = Object.keys(studentPerf);
-  report.classSummary.totalStudents = studentNames.length;
+  report.classSummary.totalStudents = Object.keys(rosteredStudents).length;
 
   var totalOverall = 0;
   var studentsWithScores = 0;
@@ -319,12 +326,14 @@ function buildTeacherActionReportHTML_() {
     'Generate Report</button>' +
     '<div id="tarOutput" style="max-height:420px;overflow-y:auto;"></div>' +
     '<script>' +
+    'function esc(s){var d=document.createElement("div");d.appendChild(document.createTextNode(s));return d.innerHTML;}' +
     'function loadTeachers(){' +
     'var g=document.getElementById("tarGrade").value;' +
     'google.script.run.withSuccessHandler(function(teachers){' +
     'var sel=document.getElementById("tarTeacher");' +
-    'sel.innerHTML="<option value=\\'\\'>Select Teacher…</option>";' +
-    'teachers.forEach(function(t){sel.innerHTML+="<option value=\\'"+t+"\\'>"+t+"</option>";});' +
+    'sel.innerHTML="";' +
+    'var defaultOpt=document.createElement("option");defaultOpt.value="";defaultOpt.textContent="Select Teacher…";sel.appendChild(defaultOpt);' +
+    'teachers.forEach(function(t){var opt=document.createElement("option");opt.value=t;opt.textContent=t;sel.appendChild(opt);});' +
     '}).getTeachersForGrade(g);}' +
     'function generateReport(){' +
     'var g=document.getElementById("tarGrade").value;' +
@@ -336,7 +345,7 @@ function buildTeacherActionReportHTML_() {
     'var h="";' +
     // Class Summary
     'h+="<div style=\\'background:#e8f0fe;padding:12px;border-radius:8px;margin-bottom:12px;\\'>";' +
-    'h+="<h4 style=\\'margin:0 0 8px;color:#1a73e8;\\'>Class Summary — "+r.teacher+"</h4>";' +
+    'h+="<h4 style=\\'margin:0 0 8px;color:#1a73e8;\\'>Class Summary — "+esc(r.teacher)+"</h4>";' +
     'h+="<table style=\\'width:100%;font-size:13px;\\'>"' +
     '+"<tr><td>Total Students</td><td style=\\'text-align:right;font-weight:bold;\\'>"+r.classSummary.totalStudents+"</td></tr>"' +
     '+"<tr><td>Class Average</td><td style=\\'text-align:right;font-weight:bold;\\'>"+r.classSummary.classAvgPct+"%</td></tr>"' +
@@ -353,7 +362,7 @@ function buildTeacherActionReportHTML_() {
     'r.unitBreakdowns.forEach(function(u){' +
     'var bg=u.avgPct>=80?"#e6f4ea":u.avgPct>=60?"#fef7e0":"#fce8e6";' +
     'h+="<tr style=\\'background:"+bg+"\\'>"' +
-    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+u.unit+"</td>"' +
+    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(u.unit)+"</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+u.avgPct+"%</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+u.above80+"</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+u.at60to79+"</td>"' +
@@ -366,8 +375,8 @@ function buildTeacherActionReportHTML_() {
     '+"<tr style=\\'background:#c5221f;color:white;\\'><th style=\\'padding:6px;text-align:left;\\'>Student</th>"' +
     '+"<th style=\\'padding:6px;\\'>Overall Avg</th><th style=\\'padding:6px;text-align:left;\\'>Units Below 60%</th></tr>";' +
     'r.flaggedStudents.forEach(function(s){' +
-    'var units=s.unitsBelow60.map(function(u){return u.unit+" ("+u.pct+"%)";}).join(", ");' +
-    'h+="<tr><td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+s.name+"</td>"' +
+    'var units=s.unitsBelow60.map(function(u){return esc(u.unit)+" ("+u.pct+"%)";}).join(", ");' +
+    'h+="<tr><td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(s.name)+"</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+s.overallAvg+"%</td>"' +
     '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;font-size:11px;\\'>"+units+"</td></tr>";});' +
     'h+="</table>";}' +
@@ -378,14 +387,14 @@ function buildTeacherActionReportHTML_() {
     '+"<tr style=\\'background:#ea8600;color:white;\\'><th style=\\'padding:6px;text-align:left;\\'>Unit</th>"' +
     '+"<th style=\\'padding:6px;text-align:left;\\'>Section</th><th style=\\'padding:6px;\\'>Avg %</th></tr>";' +
     'r.skillGaps.forEach(function(g){' +
-    'h+="<tr style=\\'background:#fef7e0;\\'><td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+g.unit+"</td>"' +
-    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+g.section+"</td>"' +
+    'h+="<tr style=\\'background:#fef7e0;\\'><td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(g.unit)+"</td>"' +
+    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(g.section)+"</td>"' +
     '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+g.avgPct+"%</td></tr>";});' +
     'h+="</table>";}' +
     // Action Items
     'h+="<h4 style=\\'margin:12px 0 4px;color:#1a73e8;\\'>Action Items</h4>";' +
     'h+="<ul style=\\'font-size:13px;padding-left:20px;\\'>";' +
-    'r.actionItems.forEach(function(a){h+="<li style=\\'margin-bottom:4px;\\'>"+a+"</li>";});' +
+    'r.actionItems.forEach(function(a){h+="<li style=\\'margin-bottom:4px;\\'>"+esc(a)+"</li>";});' +
     'h+="</ul>";' +
     'document.getElementById("tarOutput").innerHTML=h;' +
     '}).getTeacherActionReportData(g,t);}' +
