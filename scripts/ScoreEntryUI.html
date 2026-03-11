@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      font-size: 13px;
+      color: #202124;
+      padding: 16px;
+      background: #fff;
+    }
+    h2 {
+      font-size: 16px;
+      font-weight: 500;
+      color: #1a73e8;
+      margin-bottom: 12px;
+    }
+    .form-group { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #5f6368;
+      margin-bottom: 4px;
+    }
+    select, input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    select:focus, input:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26,115,232,.15);
+    }
+    .section-header {
+      background: #e8f0fe;
+      color: #1967d2;
+      font-weight: 500;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      margin: 14px 0 8px;
+    }
+    .question-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px solid #f1f3f4;
+    }
+    .question-row .q-name {
+      flex: 1;
+      font-size: 12px;
+      color: #3c4043;
+      padding-right: 8px;
+    }
+    .question-row .q-max {
+      font-size: 11px;
+      color: #9aa0a6;
+      width: 40px;
+      text-align: center;
+    }
+    .question-row input[type="number"] {
+      width: 55px;
+      padding: 5px 6px;
+      text-align: center;
+      font-size: 13px;
+    }
+    input[type="number"].error {
+      border-color: #d93025;
+      background: #fce8e6;
+    }
+    .btn {
+      display: inline-block;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-primary {
+      background: #1a73e8;
+      color: white;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .btn-primary:hover { background: #1765cc; }
+    .btn-primary:disabled { background: #dadce0; cursor: not-allowed; }
+    .btn-secondary {
+      background: #f1f3f4;
+      color: #3c4043;
+      margin-top: 6px;
+      width: 100%;
+    }
+    .btn-secondary:hover { background: #e8eaed; }
+    .status {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: none;
+    }
+    .status.success { display: block; background: #e6f4ea; color: #137333; }
+    .status.error { display: block; background: #fce8e6; color: #c5221f; }
+    .status.loading { display: block; background: #e8f0fe; color: #1967d2; }
+    .student-nav {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .student-nav .btn { flex: 1; text-align: center; }
+    .score-summary {
+      font-size: 12px;
+      color: #5f6368;
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+    #scoreForm { display: none; }
+  </style>
+</head>
+<body>
+
+  <h2>CKLA Score Entry</h2>
+
+  <!-- Step 1: Select Grade, Unit, Teacher -->
+  <div id="selectors">
+    <div class="form-group">
+      <label>Grade</label>
+      <select id="gradeSelect" onchange="onGradeChange()">
+        <option value="">Select grade...</option>
+        <option value="K">Kindergarten</option>
+        <option value="1">Grade 1</option>
+        <option value="2">Grade 2</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Unit / Assessment</label>
+      <select id="unitSelect" onchange="onUnitChange()" disabled>
+        <option value="">Select grade first...</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Teacher / Class</label>
+      <select id="teacherSelect" onchange="onTeacherChange()" disabled>
+        <option value="">Select grade first...</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Student</label>
+      <select id="studentSelect" onchange="onStudentChange()" disabled>
+        <option value="">Select teacher first...</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Step 2: Dynamic score form -->
+  <div id="scoreForm">
+    <div id="questionsContainer"></div>
+    <div class="score-summary" id="scoreSummary"></div>
+    <button class="btn btn-primary" id="submitBtn" onclick="submitScores()">
+      Submit Scores
+    </button>
+    <div class="student-nav">
+      <button class="btn btn-secondary" id="prevBtn" onclick="prevStudent()">
+        &larr; Previous
+      </button>
+      <button class="btn btn-secondary" id="nextBtn" onclick="nextStudent()">
+        Next &rarr;
+      </button>
+    </div>
+  </div>
+
+  <div id="statusMsg" class="status"></div>
+
+<script>
+  // ====================== STATE ============================
+  let unitTabs = {};
+  let currentStructure = null;
+  let currentStudents = [];
+  let currentStudentIndex = -1;
+
+  // =================== INITIALIZATION ======================
+  google.script.run
+    .withSuccessHandler(function(tabs) { unitTabs = tabs; })
+    .getUnitTabs();
+
+  // =================== GRADE CHANGED =======================
+  function onGradeChange() {
+    const grade = document.getElementById('gradeSelect').value;
+    const unitSel = document.getElementById('unitSelect');
+    const teacherSel = document.getElementById('teacherSelect');
+
+    // Reset downstream
+    unitSel.innerHTML = '<option value="">Loading...</option>';
+    unitSel.disabled = true;
+    teacherSel.innerHTML = '<option value="">Loading...</option>';
+    teacherSel.disabled = true;
+    document.getElementById('studentSelect').disabled = true;
+    document.getElementById('scoreForm').style.display = 'none';
+
+    if (!grade) return;
+
+    // Populate unit dropdown
+    const tabs = unitTabs[grade] ? unitTabs[grade].tabs : [];
+    unitSel.innerHTML = '<option value="">Select unit...</option>';
+    tabs.forEach(function(tab) {
+      const opt = document.createElement('option');
+      opt.value = tab;
+      opt.textContent = tab;
+      unitSel.appendChild(opt);
+    });
+    unitSel.disabled = false;
+
+    // Populate teacher dropdown
+    google.script.run
+      .withSuccessHandler(function(teachers) {
+        teacherSel.innerHTML = '<option value="">Select teacher...</option>';
+        var allOpt = document.createElement('option');
+        allOpt.value = 'ALL';
+        allOpt.textContent = '-- All Teachers --';
+        teacherSel.appendChild(allOpt);
+        teachers.forEach(function(t) {
+          var opt = document.createElement('option');
+          opt.value = t;
+          opt.textContent = t;
+          teacherSel.appendChild(opt);
+        });
+        teacherSel.disabled = false;
+      })
+      .getTeachersForGrade(grade);
+  }
+
+  // =================== UNIT CHANGED ========================
+  function onUnitChange() {
+    var tabName = document.getElementById('unitSelect').value;
+    if (!tabName) {
+      currentStructure = null;
+      document.getElementById('scoreForm').style.display = 'none';
+      return;
+    }
+
+    showStatus('loading', 'Loading assessment structure...');
+
+    google.script.run
+      .withSuccessHandler(function(structure) {
+        if (structure.error) {
+          showStatus('error', structure.error);
+          return;
+        }
+        currentStructure = structure;
+        clearStatus();
+        // If student is already selected, rebuild the form
+        if (document.getElementById('studentSelect').value) {
+          loadStudentForm();
+        }
+      })
+      .getUnitStructure(tabName);
+  }
+
+  // =================== TEACHER CHANGED =====================
+  function onTeacherChange() {
+    var teacher = document.getElementById('teacherSelect').value;
+    var tabName = document.getElementById('unitSelect').value;
+    var studentSel = document.getElementById('studentSelect');
+
+    studentSel.innerHTML = '<option value="">Loading...</option>';
+    document.getElementById('scoreForm').style.display = 'none';
+
+    if (!teacher || !tabName) {
+      studentSel.disabled = true;
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler(function(students) {
+        currentStudents = students;
+        studentSel.innerHTML = '<option value="">Select student (' + students.length + ')...</option>';
+        students.forEach(function(s, idx) {
+          var opt = document.createElement('option');
+          opt.value = s.name;
+          opt.textContent = s.name;
+          studentSel.appendChild(opt);
+        });
+        studentSel.disabled = false;
+      })
+      .getStudentsForTeacher(tabName, teacher);
+  }
+
+  // =================== STUDENT CHANGED =====================
+  function onStudentChange() {
+    var studentName = document.getElementById('studentSelect').value;
+    if (!studentName || !currentStructure) return;
+
+    // Track index for prev/next navigation
+    currentStudentIndex = currentStudents.findIndex(function(s) {
+      return s.name === studentName;
+    });
+
+    loadStudentForm();
+  }
+
+  // =================== LOAD FORM ===========================
+  function loadStudentForm() {
+    var studentName = document.getElementById('studentSelect').value;
+    var tabName = document.getElementById('unitSelect').value;
+    if (!studentName || !currentStructure || !tabName) return;
+
+    showStatus('loading', 'Loading scores for ' + studentName + '...');
+
+    // Get existing scores
+    google.script.run
+      .withSuccessHandler(function(existingScores) {
+        buildForm(currentStructure, existingScores);
+        clearStatus();
+        document.getElementById('scoreForm').style.display = 'block';
+        updateNavButtons();
+      })
+      .getStudentScores(tabName, studentName);
+  }
+
+  // =================== BUILD FORM ==========================
+  function buildForm(structure, existingScores) {
+    var container = document.getElementById('questionsContainer');
+    container.innerHTML = '';
+
+    var totalPoints = 0;
+    var totalMax = 0;
+
+    structure.sections.forEach(function(section) {
+      // Section header
+      var header = document.createElement('div');
+      header.className = 'section-header';
+      header.textContent = section.name + ' (' + section.questions.length + ' items)';
+      container.appendChild(header);
+
+      // Question rows
+      section.questions.forEach(function(q) {
+        var row = document.createElement('div');
+        row.className = 'question-row';
+
+        var nameSpan = document.createElement('span');
+        nameSpan.className = 'q-name';
+        nameSpan.textContent = q.name;
+
+        var maxSpan = document.createElement('span');
+        maxSpan.className = 'q-max';
+        maxSpan.textContent = '/' + q.maxPoints;
+
+        var input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.max = String(q.maxPoints);
+        input.step = q.maxPoints === 1 ? '1' : '0.5';
+        input.dataset.col = q.col;
+        input.dataset.max = q.maxPoints;
+        input.id = 'score_' + q.col;
+
+        // Pre-fill existing score
+        if (existingScores[q.col] !== undefined) {
+          input.value = existingScores[q.col];
+          totalPoints += Number(existingScores[q.col]);
+        }
+        totalMax += q.maxPoints;
+
+        // Validation on change
+        input.addEventListener('input', function() {
+          var val = Number(this.value);
+          var max = Number(this.dataset.max);
+          if (this.value !== '' && (isNaN(val) || val < 0 || val > max)) {
+            this.classList.add('error');
+          } else {
+            this.classList.remove('error');
+          }
+          updateScoreSummary();
+        });
+
+        // Tab/Enter to move to next field
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            var inputs = container.querySelectorAll('input[type="number"]');
+            var idx = Array.from(inputs).indexOf(this);
+            if (idx < inputs.length - 1) {
+              inputs[idx + 1].focus();
+              inputs[idx + 1].select();
+            }
+          }
+        });
+
+        row.appendChild(nameSpan);
+        row.appendChild(input);
+        row.appendChild(maxSpan);
+        container.appendChild(row);
+      });
+    });
+
+    updateScoreSummary();
+  }
+
+  // =================== SCORE SUMMARY =======================
+  function updateScoreSummary() {
+    var inputs = document.querySelectorAll('#questionsContainer input[type="number"]');
+    var filled = 0;
+    var total = inputs.length;
+    var points = 0;
+    var maxPts = 0;
+
+    inputs.forEach(function(inp) {
+      var max = Number(inp.dataset.max);
+      maxPts += max;
+      if (inp.value !== '') {
+        filled++;
+        points += Number(inp.value);
+      }
+    });
+
+    var pct = maxPts > 0 ? Math.round(100 * points / maxPts) : 0;
+    document.getElementById('scoreSummary').textContent =
+      filled + '/' + total + ' answered | ' +
+      points + '/' + maxPts + ' points (' + pct + '%)';
+  }
+
+  // =================== SUBMIT ==============================
+  function submitScores() {
+    var tabName = document.getElementById('unitSelect').value;
+    var studentName = document.getElementById('studentSelect').value;
+
+    if (!tabName || !studentName) {
+      showStatus('error', 'Select a unit and student first');
+      return;
+    }
+
+    // Collect scores
+    var scores = {};
+    var hasErrors = false;
+    var inputs = document.querySelectorAll('#questionsContainer input[type="number"]');
+
+    inputs.forEach(function(inp) {
+      if (inp.classList.contains('error')) hasErrors = true;
+      if (inp.value !== '') {
+        scores[inp.dataset.col] = Number(inp.value);
+      }
+    });
+
+    if (hasErrors) {
+      showStatus('error', 'Fix validation errors (red fields) before submitting');
+      return;
+    }
+
+    if (Object.keys(scores).length === 0) {
+      showStatus('error', 'No scores entered');
+      return;
+    }
+
+    document.getElementById('submitBtn').disabled = true;
+    showStatus('loading', 'Saving scores...');
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        document.getElementById('submitBtn').disabled = false;
+        if (result.success) {
+          showStatus('success', result.message);
+          // Auto-advance to next student after 1.5s
+          setTimeout(function() { nextStudent(); }, 1500);
+        } else {
+          showStatus('error', result.error);
+        }
+      })
+      .withFailureHandler(function(err) {
+        document.getElementById('submitBtn').disabled = false;
+        showStatus('error', 'Script error: ' + err.message);
+      })
+      .submitScores(tabName, studentName, scores);
+  }
+
+  // =================== NAVIGATION ==========================
+  function nextStudent() {
+    if (currentStudentIndex < currentStudents.length - 1) {
+      currentStudentIndex++;
+      var sel = document.getElementById('studentSelect');
+      sel.value = currentStudents[currentStudentIndex].name;
+      loadStudentForm();
+    }
+  }
+
+  function prevStudent() {
+    if (currentStudentIndex > 0) {
+      currentStudentIndex--;
+      var sel = document.getElementById('studentSelect');
+      sel.value = currentStudents[currentStudentIndex].name;
+      loadStudentForm();
+    }
+  }
+
+  function updateNavButtons() {
+    document.getElementById('prevBtn').disabled = currentStudentIndex <= 0;
+    document.getElementById('nextBtn').disabled =
+      currentStudentIndex >= currentStudents.length - 1;
+  }
+
+  // =================== STATUS ==============================
+  function showStatus(type, msg) {
+    var el = document.getElementById('statusMsg');
+    el.className = 'status ' + type;
+    el.textContent = msg;
+  }
+  function clearStatus() {
+    document.getElementById('statusMsg').className = 'status';
+  }
+</script>
+</body>
+</html>
