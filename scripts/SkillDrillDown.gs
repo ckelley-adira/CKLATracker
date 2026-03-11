@@ -164,8 +164,8 @@ function buildSectionRanges_(headerRow) {
   var startIdx = -1;
 
   for (var i = 0; i < headerRow.length; i++) {
-    var val = String(headerRow[i]).trim();
-    if (val !== '' && val !== 'undefined') {
+    var val = String(headerRow[i] == null ? '' : headerRow[i]).trim();
+    if (val !== '') {
       // Close previous section
       if (currentName && startIdx >= 0) {
         sections.push({ name: currentName, startOffset: startIdx, endOffset: i - 1 });

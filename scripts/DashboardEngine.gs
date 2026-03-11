@@ -263,8 +263,9 @@ function getIndividualStudentProgress(grade, studentName) {
 
   var trend = 'N/A';
   if (scores.length >= 2) {
-    var firstHalf = scores.slice(0, Math.ceil(scores.length / 2));
-    var secondHalf = scores.slice(Math.ceil(scores.length / 2));
+    var midpoint = Math.floor(scores.length / 2);
+    var firstHalf = scores.slice(0, midpoint);
+    var secondHalf = scores.slice(midpoint);
     var firstAvg = firstHalf.reduce(function(a, b) { return a + b; }, 0) / firstHalf.length;
     var secondAvg = secondHalf.reduce(function(a, b) { return a + b; }, 0) / secondHalf.length;
     var diff = Math.round(secondAvg - firstAvg);

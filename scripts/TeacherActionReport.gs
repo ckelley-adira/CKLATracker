@@ -9,6 +9,10 @@
  * ============================================================
  */
 
+// Thresholds for Teacher Action Report analysis
+var SKILL_GAP_THRESHOLD = 70;         // Section avg below this → flagged as skill gap
+var PERFORMANCE_DECLINE_THRESHOLD = 10; // Drop of this many pct points → flagged as decline
+
 
 /**
  * Show the Teacher Action Report dialog.
@@ -171,7 +175,7 @@ function getTeacherActionReportData(grade, teacher) {
           });
 
           var secAvg = secCount > 0 ? Math.round(secTotal / secCount) : 0;
-          if (secAvg < 70 && secCount > 0) {
+          if (secAvg < SKILL_GAP_THRESHOLD && secCount > 0) {
             report.skillGaps.push({
               unit: tabName,
               section: sec.name,
@@ -278,7 +282,7 @@ function generateActionItems_(report) {
 
   var declining = [];
   report.unitBreakdowns.forEach(function(u, idx) {
-    if (idx > 0 && u.avgPct < report.unitBreakdowns[idx - 1].avgPct - 10) {
+    if (idx > 0 && u.avgPct < report.unitBreakdowns[idx - 1].avgPct - PERFORMANCE_DECLINE_THRESHOLD) {
       declining.push(u.unit);
     }
   });

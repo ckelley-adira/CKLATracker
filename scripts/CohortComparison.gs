@@ -11,12 +11,9 @@
  */
 
 
-// Demographic field column offsets in Meta Data.
-// The Meta Data tab has a student roster section where demographic
-// info may be stored. These columns are searched by header name
-// at runtime if a structured demographic sheet exists.
-// Fallback: the system reads from unit tabs if demographics are
-// embedded in student info columns.
+// Meta Data tab layout constants
+var META_HEADER_ROW = 12; // Header row above teacher/student roster in Meta Data tab
+var META_DATA_START_ROW = 13; // First data row in Meta Data tab
 
 
 /**
@@ -49,8 +46,7 @@ function getDemographicFields() {
   var lastCol = meta.getLastColumn();
   if (lastCol < 1) return [];
 
-  // Scan row 12 (header row above teacher roster) for demographic fields
-  var headers = meta.getRange(12, 1, 1, lastCol).getValues()[0];
+  var headers = meta.getRange(META_HEADER_ROW, 1, 1, lastCol).getValues()[0];
   var demoFields = [];
   var knownDemoLabels = ['ethnicity', 'race', 'mll', 'el', 'ell', 'gender', 'iep', 'sped', '504', 'frl'];
 
@@ -83,10 +79,10 @@ function getStudentDemographicMap_(demoField) {
 
   var lastCol = meta.getLastColumn();
   var lastRow = meta.getLastRow();
-  if (lastCol < 1 || lastRow < 13) return {};
+  if (lastCol < 1 || lastRow < META_DATA_START_ROW) return {};
 
   // Find the column index for the requested demographic field
-  var headers = meta.getRange(12, 1, 1, lastCol).getValues()[0];
+  var headers = meta.getRange(META_HEADER_ROW, 1, 1, lastCol).getValues()[0];
   var demoColIdx = -1;
   for (var c = 0; c < headers.length; c++) {
     if (String(headers[c]).trim() === demoField) {
@@ -107,8 +103,8 @@ function getStudentDemographicMap_(demoField) {
   }
   if (nameColIdx === -1) return {};
 
-  var numRows = lastRow - 12;
-  var data = meta.getRange(13, 1, numRows, lastCol).getValues();
+  var numRows = lastRow - META_HEADER_ROW;
+  var data = meta.getRange(META_DATA_START_ROW, 1, numRows, lastCol).getValues();
   var map = {};
 
   data.forEach(function(row) {
