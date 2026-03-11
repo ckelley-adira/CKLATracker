@@ -118,11 +118,11 @@ function createTeacherInputSheet(tabName, teacher) {
   // Read the full score range for all students' rows from the source sheet
   var studentScores = [];
   if (columnMapping.length > 0) {
+    const maxSourceCol = Math.max.apply(null, columnMapping.map(function(cm) { return cm.sourceCol; }));
+    const numSourceCols = maxSourceCol - COL.FIRST_QUESTION + 1;
+
     students.forEach(function(student) {
-      // Read all columns from FIRST_QUESTION to the last mapped source column in one call
-      var maxSourceCol = Math.max.apply(null, columnMapping.map(function(cm) { return cm.sourceCol; }));
-      var numCols = maxSourceCol - COL.FIRST_QUESTION + 1;
-      var rowData = sourceSheet.getRange(student.row, COL.FIRST_QUESTION, 1, numCols).getValues()[0];
+      var rowData = sourceSheet.getRange(student.row, COL.FIRST_QUESTION, 1, numSourceCols).getValues()[0];
       var rowScores = {};
       columnMapping.forEach(function(cm) {
         rowScores[cm.sourceCol] = rowData[cm.sourceCol - COL.FIRST_QUESTION];
