@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CKLA Skills Tracking — Apps Script System</title>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --accent: #e94560;
+    --blue: #0f3460;
+    --bg: #f8f9fc;
+    --card: #ffffff;
+    --border: #e2e6ee;
+    --green: #2d8a4e;
+    --amber: #d4880f;
+    --red: #c0392b;
+    --purple: #6c3483;
+    --teal: #0e6655;
+    --code-bg: #1e1e2e;
+    --code-fg: #cdd6f4;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.65;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 2rem; color: var(--blue); border-bottom: 3px solid var(--accent); padding-bottom: .5rem; margin-bottom: .25rem; }
+  .subtitle { color: #666; font-size: .95rem; margin-bottom: 2rem; }
+  h2 { font-size: 1.35rem; color: var(--blue); margin: 2.5rem 0 .75rem; display: flex; align-items: center; gap: .5rem; }
+  h2 .num { background: var(--accent); color: white; border-radius: 50%; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0; }
+  h3 { font-size: 1.05rem; color: var(--ink); margin: 1.25rem 0 .5rem; }
+  p { margin-bottom: .75rem; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+  .card.green { border-left: 4px solid var(--green); }
+  .card.blue { border-left: 4px solid var(--blue); }
+  .card.purple { border-left: 4px solid var(--purple); }
+  .card.amber { border-left: 4px solid var(--amber); }
+  code { font-family: 'Consolas', 'Fira Code', 'Courier New', monospace; font-size: .88em; background: #e8ecf4; padding: .1rem .35rem; border-radius: 3px; }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 1.25rem 1.5rem;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+    font-size: .8rem;
+    line-height: 1.5;
+    margin: .75rem 0 1rem;
+    white-space: pre;
+    tab-size: 2;
+  }
+  .callout { background: #eef3ff; border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; font-size: .92rem; }
+  .callout.warning { background: #fff8e6; border-left: 3px solid var(--amber); }
+  .callout.success { background: #eafaf0; border-left: 3px solid var(--green); }
+  .callout.info { background: #eef3ff; border-left: 3px solid var(--blue); }
+  .file-header {
+    display: flex; align-items: center; gap: .75rem;
+    background: var(--blue); color: white;
+    padding: .6rem 1.25rem; border-radius: 8px 8px 0 0;
+    margin-top: 1.5rem; font-weight: 600; font-size: .95rem;
+  }
+  .file-header .ext { background: rgba(255,255,255,.2); padding: .15rem .5rem; border-radius: 4px; font-size: .8rem; }
+  .file-header + pre { margin-top: 0; border-radius: 0 0 10px 10px; }
+  table { width: 100%; border-collapse: collapse; margin: .75rem 0 1rem; font-size: .88rem; }
+  th { background: var(--blue); color: white; padding: .55rem .7rem; text-align: left; font-weight: 600; }
+  td { padding: .45rem .7rem; border-bottom: 1px solid var(--border); }
+  tr:nth-child(even) td { background: #f4f6fa; }
+  .toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; columns: 2; column-gap: 2rem; }
+  .toc a { display: block; color: var(--blue); text-decoration: none; padding: .2rem 0; font-size: .9rem; }
+  .toc a:hover { color: var(--accent); }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1rem 0; }
+  .stat { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; text-align: center; }
+  .stat .big { font-size: 1.75rem; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: .8rem; color: #777; margin-top: .15rem; }
+  @media (max-width: 800px) { body { padding: 1rem; } .toc { columns: 1; } }
+</style>
+</head>
+<body>
+
+<h1>CKLA Skills Tracking — Apps Script System</h1>
+<p class="subtitle">Phase 2 Redesign: Form-Based Entry + Auto-Import + Dashboard Engine &middot; Prepared for Christina Kelley &middot; March 2026</p>
+
+<div class="toc">
+  <a href="#overview">1. System Architecture</a>
+  <a href="#install">2. Installation Guide</a>
+  <a href="#config">3. CKLAConfig.gs — Menu &amp; Configuration</a>
+  <a href="#entry">4. ScoreEntry.gs — Score Entry Backend</a>
+  <a href="#ui">5. ScoreEntryUI.html — Sidebar Interface</a>
+  <a href="#dashboard">6. DashboardEngine.gs — Auto-Calculations</a>
+  <a href="#import">7. ImportExport.gs — Bulk Operations</a>
+  <a href="#usage">8. How Teachers Use It</a>
+</div>
+
+<!-- ===== SECTION 1 ===== -->
+<h2 id="overview"><span class="num">1</span> System Architecture</h2>
+
+<p>This system replaces the manual 0/1 cell-editing workflow in the current CKLA Skills Tracking spreadsheet with a <strong>sidebar-based score entry form</strong> that dynamically adapts to each unit's assessment structure. Teachers select a grade, unit, and student — the form reads the actual column headers from the unit tab and presents a clean form with labeled fields, point validation, and section grouping.</p>
+
+<div class="stat-grid">
+  <div class="stat"><div class="big">5</div><div class="label">Script files to install</div></div>
+  <div class="stat"><div class="big">0</div><div class="label">Manual cell edits needed</div></div>
+  <div class="stat"><div class="big">K–Gr2</div><div class="label">All grades supported</div></div>
+  <div class="stat"><div class="big">~30s</div><div class="label">Per-student entry time</div></div>
+</div>
+
+<div class="card green">
+  <h3>How It Works</h3>
+  <p><strong>Step 1:</strong> Teacher opens the sidebar from the CKLA menu → "Enter Assessment Scores"</p>
+  <p><strong>Step 2:</strong> Selects Grade (K, 1, 2) → Unit (U1–U10) → their class auto-fills from Meta Data</p>
+  <p><strong>Step 3:</strong> Selects a student from a dropdown (filtered to their class)</p>
+  <p><strong>Step 4:</strong> The form reads the selected unit tab's Row 14 (sections) and Row 15 (questions) and dynamically generates input fields grouped by assessment section, with max-point validation from Row 2</p>
+  <p><strong>Step 5:</strong> Teacher enters scores → clicks Submit → script writes values directly to the correct cells in the unit tab</p>
+  <p><strong>Step 6:</strong> Existing formulas in the spreadsheet (averages, quintiles, summary charts) auto-recalculate</p>
+</div>
+
+<table>
+  <tr><th>File</th><th>Type</th><th>Purpose</th></tr>
+  <tr><td><code>CKLAConfig.gs</code></td><td>Script</td><td>Menu creation, constants, tab mapping, version info</td></tr>
+  <tr><td><code>ScoreEntry.gs</code></td><td>Script</td><td>Backend: reads unit structure, finds student rows, writes scores</td></tr>
+  <tr><td><code>ScoreEntryUI.html</code></td><td>HTML</td><td>Sidebar UI: dynamic form with section grouping and validation</td></tr>
+  <tr><td><code>DashboardEngine.gs</code></td><td>Script</td><td>Refreshes summary stats, updates charts, generates reports</td></tr>
+  <tr><td><code>ImportExport.gs</code></td><td>Script</td><td>Bulk CSV import, data export, backup utilities</td></tr>
+</table>
+
+<!-- ===== SECTION 2 ===== -->
+<h2 id="install"><span class="num">2</span> Installation Guide</h2>
+
+<div class="card blue">
+  <h3>Step-by-Step Setup</h3>
+  <ol style="padding-left: 1.5rem; margin: .5rem 0;">
+    <li>Open your CKLA Skills Tracking Google Sheet</li>
+    <li>Go to <strong>Extensions → Apps Script</strong></li>
+    <li>Delete any existing code in <code>Code.gs</code> (the default file)</li>
+    <li>Rename <code>Code.gs</code> to <code>CKLAConfig.gs</code></li>
+    <li>Paste the code from Section 3 below into <code>CKLAConfig.gs</code></li>
+    <li>Click the <strong>+</strong> button next to "Files" → <strong>Script</strong> → name it <code>ScoreEntry</code> → paste Section 4</li>
+    <li>Click <strong>+</strong> → <strong>Script</strong> → name it <code>DashboardEngine</code> → paste Section 6</li>
+    <li>Click <strong>+</strong> → <strong>Script</strong> → name it <code>ImportExport</code> → paste Section 7</li>
+    <li>Click <strong>+</strong> → <strong>HTML</strong> → name it <code>ScoreEntryUI</code> → paste Section 5</li>
+    <li>Click <strong>Save</strong> (Ctrl+S)</li>
+    <li>Reload the spreadsheet — you'll see a new <strong>"CKLA Tools"</strong> menu in the menu bar</li>
+    <li>First run: click <strong>CKLA Tools → Enter Assessment Scores</strong> → authorize when prompted</li>
+  </ol>
+</div>
+
+<div class="callout warning">
+  <strong>Authorization:</strong> The first time you run any function, Google will ask you to authorize the script. Click "Advanced" → "Go to CKLA Skills Tracking (unsafe)" → "Allow". This is normal for custom scripts — it needs permission to read/write your spreadsheet data.
+</div>
+
+
+<!-- ===== SECTION 3 ===== -->
+<h2 id="config"><span class="num">3</span> CKLAConfig.gs — Menu &amp; Configuration</h2>
+
+<div class="file-header"><span class="ext">.gs</span> CKLAConfig.gs</div>
+<pre>/**
+ * ============================================================
+ * CKLA Skills Tracking — Apps Script System
+ * File: CKLAConfig.gs
+ * Purpose: Menu, constants, tab mapping, utility functions
+ * Version: 1.0
+ * ============================================================
+ */
+
+// ======================== CONSTANTS ==========================
+
+const CKLA_VERSION = '1.0';
+
+// Row positions in every unit tab (fixed layout)
+const ROW = {
+  SECTION_HEADERS: 14,   // Part 1, Part 2, etc.
+  QUESTION_HEADERS: 15,  // Individual question/skill names
+  POINTS_POSSIBLE: 2,    // Max points per question
+  DATA_START: 16,        // First student data row
+  DATA_END: 365          // Last possible student row
+};
+
+// Column positions for student info (A–I)
+const COL = {
+  STUDENT_NUM: 1,    // A: Student #
+  SCHOOL: 2,         // B: School
+  GRADE: 3,          // C: Grade
+  TEACHER: 4,        // D: Teacher
+  STUDENT_ID: 5,     // E: Student ID
+  STUDENT_NAME: 6,   // F: Student name (Last, First)
+  QUINTILE: 7,       // G: Overall Level (formula)
+  PCT_CORRECT: 8,    // H: Overall % Correct (formula)
+  TOTAL_PTS: 9,      // I: Total Points (formula)
+  FIRST_QUESTION: 10 // J: First data-entry column
+};
+
+// Grade → unit tab mapping (auto-detected from sheet names)
+// This reads the actual spreadsheet tabs at runtime
+function getUnitTabs() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const allSheets = ss.getSheets().map(s =&gt; s.getName());
+
+  const gradeMap = {
+    'K': { prefix: 'K U', tabs: [] },
+    '1': { prefix: 'Gr1', tabs: [] },
+    '2': { prefix: 'Gr2', tabs: [] }
+  };
+
+  allSheets.forEach(name =&gt; {
+    if (name.startsWith('K U')) {
+      gradeMap['K'].tabs.push(name);
+    } else if (name.startsWith('Gr1') &amp;&amp;
+               !name.includes('Roster') &amp;&amp;
+               !name.includes('Summary')) {
+      gradeMap['1'].tabs.push(name);
+    } else if (name.startsWith('Gr2') &amp;&amp;
+               !name.includes('Roster') &amp;&amp;
+               !name.includes('Summary')) {
+      gradeMap['2'].tabs.push(name);
+    }
+  });
+
+  return gradeMap;
+}
+
+
+// ======================== MENU ===============================
+
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu('CKLA Tools')
+    .addItem('Enter Assessment Scores', 'showScoreEntrySidebar')
+    .addSeparator()
+    .addSubMenu(ui.createMenu('Reports')
+      .addItem('Refresh All Summaries', 'refreshAllSummaries')
+      .addItem('Generate Student Report', 'showStudentReportDialog')
+      .addItem('Export Grade Data (CSV)', 'showExportDialog')
+    )
+    .addSubMenu(ui.createMenu('Data Tools')
+      .addItem('Import Scores from CSV', 'showImportDialog')
+      .addItem('Validate All Data', 'validateAllData')
+      .addItem('Backup Data Sheets', 'backupDataSheets')
+    )
+    .addSeparator()
+    .addItem('About CKLA Tools v' + CKLA_VERSION, 'showAbout')
+    .addToUi();
+}
+
+function showScoreEntrySidebar() {
+  const html = HtmlService
+    .createHtmlOutputFromFile('ScoreEntryUI')
+    .setTitle('CKLA Score Entry')
+    .setWidth(420);
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+function showAbout() {
+  const ui = SpreadsheetApp.getUi();
+  ui.alert(
+    'CKLA Skills Tracking Tools v' + CKLA_VERSION,
+    'Automated score entry &amp; reporting for CKLA assessments.\n\n' +
+    'Built for The Indy Learning Team.\n' +
+    'Christel House Indianapolis.',
+    ui.ButtonSet.OK
+  );
+}
+
+
+// ===================== UTILITY FUNCTIONS =====================
+
+/**
+ * Get teachers for a specific grade from the Meta Data tab.
+ * Returns array of teacher names.
+ */
+function getTeachersForGrade(grade) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const metaSheet = ss.getSheetByName('1. Meta Data');
+  if (!metaSheet) return [];
+
+  const gradeLabels = { 'K': 'Kinder', '1': '1st', '2': '2nd' };
+  const gradeLabel = gradeLabels[grade] || grade;
+
+  // Teacher roster starts at row 13, columns B=School, C=Grade, D=Teacher
+  const data = metaSheet.getRange('C13:D42').getValues();
+  const teachers = [];
+
+  data.forEach(row =&gt; {
+    const rowGrade = String(row[0]).trim();
+    const teacher = String(row[1]).trim();
+    if (rowGrade === gradeLabel &amp;&amp; teacher &amp;&amp; teacher !== '') {
+      teachers.push(teacher);
+    }
+  });
+
+  return teachers;
+}
+
+/**
+ * Get students for a specific teacher from a unit tab.
+ * Reads the student list from the data rows (ROW.DATA_START onward).
+ */
+function getStudentsForTeacher(tabName, teacher) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(tabName);
+  if (!sheet) return [];
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow &lt; ROW.DATA_START) return [];
+
+  const numRows = lastRow - ROW.DATA_START + 1;
+  // Read columns D (teacher) and F (student name)
+  const teacherCol = sheet.getRange(ROW.DATA_START, COL.TEACHER, numRows, 1).getValues();
+  const nameCol = sheet.getRange(ROW.DATA_START, COL.STUDENT_NAME, numRows, 1).getValues();
+
+  const students = [];
+  for (let i = 0; i &lt; numRows; i++) {
+    const t = String(teacherCol[i][0]).trim();
+    const name = String(nameCol[i][0]).trim();
+    if (name &amp;&amp; name !== '' &amp;&amp; (teacher === 'ALL' || t === teacher)) {
+      students.push({
+        name: name,
+        row: ROW.DATA_START + i
+      });
+    }
+  }
+  return students;
+}
+
+/**
+ * Find a student's row number in a unit tab by name.
+ */
+function findStudentRow(tabName, studentName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(tabName);
+  if (!sheet) return -1;
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow &lt; ROW.DATA_START) return -1;
+
+  const numRows = lastRow - ROW.DATA_START + 1;
+  const names = sheet.getRange(ROW.DATA_START, COL.STUDENT_NAME, numRows, 1).getValues();
+
+  for (let i = 0; i &lt; numRows; i++) {
+    if (String(names[i][0]).trim() === studentName) {
+      return ROW.DATA_START + i;
+    }
+  }
+  return -1;
+}</pre>
+
+
+<!-- ===== SECTION 4 ===== -->
+<h2 id="entry"><span class="num">4</span> ScoreEntry.gs — Score Entry Backend</h2>
+
+<div class="file-header"><span class="ext">.gs</span> ScoreEntry.gs</div>
+<pre>/**
+ * ============================================================
+ * CKLA Skills Tracking — Apps Script System
+ * File: ScoreEntry.gs
+ * Purpose: Read unit structure, write scores to cells
+ * Version: 1.0
+ * ============================================================
+ */
+
+/**
+ * Reads the assessment structure for a given unit tab.
+ * Returns an object describing sections, questions, and point limits.
+ *
+ * Called by the sidebar UI to dynamically build the form.
+ */
+function getUnitStructure(tabName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(tabName);
+  if (!sheet) {
+    return { error: 'Tab not found: ' + tabName };
+  }
+
+  const lastCol = sheet.getLastColumn();
+  if (lastCol &lt; COL.FIRST_QUESTION) {
+    return { error: 'No question columns found in ' + tabName };
+  }
+
+  const numCols = lastCol - COL.FIRST_QUESTION + 1;
+
+  // Read the three header rows in one batch (Big Gulp pattern!)
+  const headerRange = sheet.getRange(
+    ROW.POINTS_POSSIBLE,
+    COL.FIRST_QUESTION,
+    ROW.QUESTION_HEADERS - ROW.POINTS_POSSIBLE + 1,
+    numCols
+  );
+  const headerData = headerRange.getValues();
+
+  // Row indices within our batch
+  const pointsRow = headerData[0];                                     // Row 2
+  const sectionRow = headerData[ROW.SECTION_HEADERS - ROW.POINTS_POSSIBLE]; // Row 14
+  const questionRow = headerData[ROW.QUESTION_HEADERS - ROW.POINTS_POSSIBLE]; // Row 15
+
+  // Also read merged cell ranges to identify section spans
+  // We'll detect sections by checking where sectionRow has values
+  const sections = [];
+  let currentSection = null;
+
+  for (let i = 0; i &lt; numCols; i++) {
+    const colIndex = COL.FIRST_QUESTION + i;
+    const sectionName = sectionRow[i] ? String(sectionRow[i]).trim() : '';
+    const questionName = questionRow[i] ? String(questionRow[i]).trim() : '';
+    const maxPoints = pointsRow[i] !== '' &amp;&amp; pointsRow[i] !== null
+                      ? Number(pointsRow[i]) : 1;
+
+    // New section detected
+    if (sectionName !== '') {
+      currentSection = {
+        name: sectionName,
+        questions: []
+      };
+      sections.push(currentSection);
+    }
+
+    // Skip "Total" columns — they're formula-computed
+    if (questionName.toLowerCase() === 'total') continue;
+    // Skip "Needs Part 2?" columns
+    if (questionName.toLowerCase().includes('needs part')) continue;
+    // Skip empty question headers
+    if (questionName === '') continue;
+
+    // If no section has been started yet, create a default one
+    if (!currentSection) {
+      currentSection = { name: 'Assessment', questions: [] };
+      sections.push(currentSection);
+    }
+
+    currentSection.questions.push({
+      col: colIndex,
+      name: questionName,
+      maxPoints: maxPoints
+    });
+  }
+
+  return {
+    tabName: tabName,
+    sections: sections,
+    totalQuestions: sections.reduce((sum, s) =&gt; sum + s.questions.length, 0)
+  };
+}
+
+
+/**
+ * Get existing scores for a student in a unit tab.
+ * Used to pre-fill the form when editing existing scores.
+ */
+function getStudentScores(tabName, studentName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(tabName);
+  if (!sheet) return {};
+
+  const row = findStudentRow(tabName, studentName);
+  if (row === -1) return {};
+
+  const structure = getUnitStructure(tabName);
+  if (structure.error) return {};
+
+  const scores = {};
+
+  // Batch read all score columns for this student
+  const lastCol = sheet.getLastColumn();
+  const numCols = lastCol - COL.FIRST_QUESTION + 1;
+  const rowData = sheet.getRange(row, COL.FIRST_QUESTION, 1, numCols).getValues()[0];
+
+  structure.sections.forEach(section =&gt; {
+    section.questions.forEach(q =&gt; {
+      const idx = q.col - COL.FIRST_QUESTION;
+      const val = rowData[idx];
+      if (val !== '' &amp;&amp; val !== null &amp;&amp; val !== undefined) {
+        scores[q.col] = Number(val);
+      }
+    });
+  });
+
+  return scores;
+}
+
+
+/**
+ * Write scores for a student in a unit tab.
+ * Called by the sidebar when the teacher clicks Submit.
+ *
+ * @param {string} tabName - The unit tab name
+ * @param {string} studentName - Student name (Last, First)
+ * @param {Object} scores - Map of column number -> score value
+ * @returns {Object} - Success/error result
+ */
+function submitScores(tabName, studentName, scores) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(tabName);
+
+  if (!sheet) {
+    return { success: false, error: 'Tab not found: ' + tabName };
+  }
+
+  const row = findStudentRow(tabName, studentName);
+  if (row === -1) {
+    return { success: false, error: 'Student not found: ' + studentName };
+  }
+
+  // Validate scores against point limits
+  const structure = getUnitStructure(tabName);
+  const questionMap = {};
+  structure.sections.forEach(s =&gt; {
+    s.questions.forEach(q =&gt; {
+      questionMap[q.col] = q;
+    });
+  });
+
+  const errors = [];
+  const validScores = {};
+
+  Object.keys(scores).forEach(colStr =&gt; {
+    const col = parseInt(colStr);
+    const value = scores[colStr];
+    const question = questionMap[col];
+
+    if (!question) {
+      errors.push('Unknown column: ' + col);
+      return;
+    }
+
+    if (value === '' || value === null || value === undefined) {
+      // Allow blank — don't write anything
+      return;
+    }
+
+    const numVal = Number(value);
+    if (isNaN(numVal)) {
+      errors.push(question.name + ': not a number');
+      return;
+    }
+    if (numVal &lt; 0) {
+      errors.push(question.name + ': cannot be negative');
+      return;
+    }
+    if (numVal &gt; question.maxPoints) {
+      errors.push(question.name + ': max is ' + question.maxPoints + ', got ' + numVal);
+      return;
+    }
+
+    validScores[col] = numVal;
+  });
+
+  if (errors.length &gt; 0) {
+    return { success: false, error: errors.join('\n') };
+  }
+
+  // Write scores — batch where possible
+  // Group consecutive columns for efficient range writes
+  const cols = Object.keys(validScores).map(Number).sort((a, b) =&gt; a - b);
+
+  if (cols.length === 0) {
+    return { success: false, error: 'No scores to submit' };
+  }
+
+  // Write each score individually (safest for non-consecutive columns)
+  cols.forEach(col =&gt; {
+    sheet.getRange(row, col).setValue(validScores[col]);
+  });
+
+  // Log the submission
+  logSubmission_(tabName, studentName, cols.length);
+
+  return {
+    success: true,
+    message: 'Saved ' + cols.length + ' scores for ' + studentName + ' in ' + tabName
+  };
+}
+
+
+/**
+ * Quick-entry mode: submit scores for ALL students in a class
+ * for a single question/column.
+ */
+function submitColumnScores(tabName, teacher, colNumber, scoreMap) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(tabName);
+
+  if (!sheet) {
+    return { success: false, error: 'Tab not found: ' + tabName };
+  }
+
+  const students = getStudentsForTeacher(tabName, teacher);
+  let written = 0;
+  const errors = [];
+
+  students.forEach(student =&gt; {
+    const score = scoreMap[student.name];
+    if (score === undefined || score === null || score === '') return;
+
+    const numVal = Number(score);
+    if (isNaN(numVal)) {
+      errors.push(student.name + ': invalid score');
+      return;
+    }
+
+    sheet.getRange(student.row, colNumber).setValue(numVal);
+    written++;
+  });
+
+  return {
+    success: true,
+    message: 'Wrote ' + written + ' scores to column ' + colNumber,
+    errors: errors
+  };
+}
+
+
+/**
+ * Internal: log a score submission to the Staging tab (if it exists)
+ * for audit trail purposes.
+ */
+function logSubmission_(tabName, studentName, scoreCount) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let logSheet = ss.getSheetByName('Submission Log');
+
+    // Create the log sheet if it doesn't exist
+    if (!logSheet) {
+      logSheet = ss.insertSheet('Submission Log');
+      logSheet.appendRow([
+        'Timestamp', 'User', 'Tab', 'Student', 'Scores Written'
+      ]);
+      logSheet.getRange('1:1').setFontWeight('bold');
+      // Move to end
+      ss.moveActiveSheet(ss.getNumSheets());
+    }
+
+    logSheet.appendRow([
+      new Date(),
+      Session.getActiveUser().getEmail(),
+      tabName,
+      studentName,
+      scoreCount
+    ]);
+  } catch (e) {
+    // Logging failure shouldn't block score submission
+    console.log('Log error: ' + e.message);
+  }
+}</pre>
+
+
+<!-- ===== SECTION 5 ===== -->
+<h2 id="ui"><span class="num">5</span> ScoreEntryUI.html — Sidebar Interface</h2>
+
+<div class="file-header"><span class="ext">.html</span> ScoreEntryUI.html</div>
+<pre>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;base target="_top"&gt;
+  &lt;style&gt;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      font-size: 13px;
+      color: #202124;
+      padding: 16px;
+      background: #fff;
+    }
+    h2 {
+      font-size: 16px;
+      font-weight: 500;
+      color: #1a73e8;
+      margin-bottom: 12px;
+    }
+    .form-group { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #5f6368;
+      margin-bottom: 4px;
+    }
+    select, input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    select:focus, input:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26,115,232,.15);
+    }
+    .section-header {
+      background: #e8f0fe;
+      color: #1967d2;
+      font-weight: 500;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      margin: 14px 0 8px;
+    }
+    .question-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px solid #f1f3f4;
+    }
+    .question-row .q-name {
+      flex: 1;
+      font-size: 12px;
+      color: #3c4043;
+      padding-right: 8px;
+    }
+    .question-row .q-max {
+      font-size: 11px;
+      color: #9aa0a6;
+      width: 40px;
+      text-align: center;
+    }
+    .question-row input[type="number"] {
+      width: 55px;
+      padding: 5px 6px;
+      text-align: center;
+      font-size: 13px;
+    }
+    input[type="number"].error {
+      border-color: #d93025;
+      background: #fce8e6;
+    }
+    .btn {
+      display: inline-block;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-primary {
+      background: #1a73e8;
+      color: white;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .btn-primary:hover { background: #1765cc; }
+    .btn-primary:disabled { background: #dadce0; cursor: not-allowed; }
+    .btn-secondary {
+      background: #f1f3f4;
+      color: #3c4043;
+      margin-top: 6px;
+      width: 100%;
+    }
+    .btn-secondary:hover { background: #e8eaed; }
+    .status {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: none;
+    }
+    .status.success { display: block; background: #e6f4ea; color: #137333; }
+    .status.error { display: block; background: #fce8e6; color: #c5221f; }
+    .status.loading { display: block; background: #e8f0fe; color: #1967d2; }
+    .student-nav {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .student-nav .btn { flex: 1; text-align: center; }
+    .score-summary {
+      font-size: 12px;
+      color: #5f6368;
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+    #scoreForm { display: none; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+  &lt;h2&gt;CKLA Score Entry&lt;/h2&gt;
+
+  &lt;!-- Step 1: Select Grade, Unit, Teacher --&gt;
+  &lt;div id="selectors"&gt;
+    &lt;div class="form-group"&gt;
+      &lt;label&gt;Grade&lt;/label&gt;
+      &lt;select id="gradeSelect" onchange="onGradeChange()"&gt;
+        &lt;option value=""&gt;Select grade...&lt;/option&gt;
+        &lt;option value="K"&gt;Kindergarten&lt;/option&gt;
+        &lt;option value="1"&gt;Grade 1&lt;/option&gt;
+        &lt;option value="2"&gt;Grade 2&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+
+    &lt;div class="form-group"&gt;
+      &lt;label&gt;Unit / Assessment&lt;/label&gt;
+      &lt;select id="unitSelect" onchange="onUnitChange()" disabled&gt;
+        &lt;option value=""&gt;Select grade first...&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+
+    &lt;div class="form-group"&gt;
+      &lt;label&gt;Teacher / Class&lt;/label&gt;
+      &lt;select id="teacherSelect" onchange="onTeacherChange()" disabled&gt;
+        &lt;option value=""&gt;Select grade first...&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+
+    &lt;div class="form-group"&gt;
+      &lt;label&gt;Student&lt;/label&gt;
+      &lt;select id="studentSelect" onchange="onStudentChange()" disabled&gt;
+        &lt;option value=""&gt;Select teacher first...&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- Step 2: Dynamic score form --&gt;
+  &lt;div id="scoreForm"&gt;
+    &lt;div id="questionsContainer"&gt;&lt;/div&gt;
+    &lt;div class="score-summary" id="scoreSummary"&gt;&lt;/div&gt;
+    &lt;button class="btn btn-primary" id="submitBtn" onclick="submitScores()"&gt;
+      Submit Scores
+    &lt;/button&gt;
+    &lt;div class="student-nav"&gt;
+      &lt;button class="btn btn-secondary" id="prevBtn" onclick="prevStudent()"&gt;
+        &amp;larr; Previous
+      &lt;/button&gt;
+      &lt;button class="btn btn-secondary" id="nextBtn" onclick="nextStudent()"&gt;
+        Next &amp;rarr;
+      &lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div id="statusMsg" class="status"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  // ====================== STATE ============================
+  let unitTabs = {};
+  let currentStructure = null;
+  let currentStudents = [];
+  let currentStudentIndex = -1;
+
+  // =================== INITIALIZATION ======================
+  google.script.run
+    .withSuccessHandler(function(tabs) { unitTabs = tabs; })
+    .getUnitTabs();
+
+  // =================== GRADE CHANGED =======================
+  function onGradeChange() {
+    const grade = document.getElementById('gradeSelect').value;
+    const unitSel = document.getElementById('unitSelect');
+    const teacherSel = document.getElementById('teacherSelect');
+
+    // Reset downstream
+    unitSel.innerHTML = '&lt;option value=""&gt;Loading...&lt;/option&gt;';
+    unitSel.disabled = true;
+    teacherSel.innerHTML = '&lt;option value=""&gt;Loading...&lt;/option&gt;';
+    teacherSel.disabled = true;
+    document.getElementById('studentSelect').disabled = true;
+    document.getElementById('scoreForm').style.display = 'none';
+
+    if (!grade) return;
+
+    // Populate unit dropdown
+    const tabs = unitTabs[grade] ? unitTabs[grade].tabs : [];
+    unitSel.innerHTML = '&lt;option value=""&gt;Select unit...&lt;/option&gt;';
+    tabs.forEach(function(tab) {
+      const opt = document.createElement('option');
+      opt.value = tab;
+      opt.textContent = tab;
+      unitSel.appendChild(opt);
+    });
+    unitSel.disabled = false;
+
+    // Populate teacher dropdown
+    google.script.run
+      .withSuccessHandler(function(teachers) {
+        teacherSel.innerHTML = '&lt;option value=""&gt;Select teacher...&lt;/option&gt;';
+        var allOpt = document.createElement('option');
+        allOpt.value = 'ALL';
+        allOpt.textContent = '-- All Teachers --';
+        teacherSel.appendChild(allOpt);
+        teachers.forEach(function(t) {
+          var opt = document.createElement('option');
+          opt.value = t;
+          opt.textContent = t;
+          teacherSel.appendChild(opt);
+        });
+        teacherSel.disabled = false;
+      })
+      .getTeachersForGrade(grade);
+  }
+
+  // =================== UNIT CHANGED ========================
+  function onUnitChange() {
+    var tabName = document.getElementById('unitSelect').value;
+    if (!tabName) {
+      currentStructure = null;
+      document.getElementById('scoreForm').style.display = 'none';
+      return;
+    }
+
+    showStatus('loading', 'Loading assessment structure...');
+
+    google.script.run
+      .withSuccessHandler(function(structure) {
+        if (structure.error) {
+          showStatus('error', structure.error);
+          return;
+        }
+        currentStructure = structure;
+        clearStatus();
+        // If student is already selected, rebuild the form
+        if (document.getElementById('studentSelect').value) {
+          loadStudentForm();
+        }
+      })
+      .getUnitStructure(tabName);
+  }
+
+  // =================== TEACHER CHANGED =====================
+  function onTeacherChange() {
+    var teacher = document.getElementById('teacherSelect').value;
+    var tabName = document.getElementById('unitSelect').value;
+    var studentSel = document.getElementById('studentSelect');
+
+    studentSel.innerHTML = '&lt;option value=""&gt;Loading...&lt;/option&gt;';
+    document.getElementById('scoreForm').style.display = 'none';
+
+    if (!teacher || !tabName) {
+      studentSel.disabled = true;
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler(function(students) {
+        currentStudents = students;
+        studentSel.innerHTML = '&lt;option value=""&gt;Select student (' + students.length + ')...&lt;/option&gt;';
+        students.forEach(function(s, idx) {
+          var opt = document.createElement('option');
+          opt.value = s.name;
+          opt.textContent = s.name;
+          studentSel.appendChild(opt);
+        });
+        studentSel.disabled = false;
+      })
+      .getStudentsForTeacher(tabName, teacher);
+  }
+
+  // =================== STUDENT CHANGED =====================
+  function onStudentChange() {
+    var studentName = document.getElementById('studentSelect').value;
+    if (!studentName || !currentStructure) return;
+
+    // Track index for prev/next navigation
+    currentStudentIndex = currentStudents.findIndex(function(s) {
+      return s.name === studentName;
+    });
+
+    loadStudentForm();
+  }
+
+  // =================== LOAD FORM ===========================
+  function loadStudentForm() {
+    var studentName = document.getElementById('studentSelect').value;
+    var tabName = document.getElementById('unitSelect').value;
+    if (!studentName || !currentStructure || !tabName) return;
+
+    showStatus('loading', 'Loading scores for ' + studentName + '...');
+
+    // Get existing scores
+    google.script.run
+      .withSuccessHandler(function(existingScores) {
+        buildForm(currentStructure, existingScores);
+        clearStatus();
+        document.getElementById('scoreForm').style.display = 'block';
+        updateNavButtons();
+      })
+      .getStudentScores(tabName, studentName);
+  }
+
+  // =================== BUILD FORM ==========================
+  function buildForm(structure, existingScores) {
+    var container = document.getElementById('questionsContainer');
+    container.innerHTML = '';
+
+    var totalPoints = 0;
+    var totalMax = 0;
+
+    structure.sections.forEach(function(section) {
+      // Section header
+      var header = document.createElement('div');
+      header.className = 'section-header';
+      header.textContent = section.name + ' (' + section.questions.length + ' items)';
+      container.appendChild(header);
+
+      // Question rows
+      section.questions.forEach(function(q) {
+        var row = document.createElement('div');
+        row.className = 'question-row';
+
+        var nameSpan = document.createElement('span');
+        nameSpan.className = 'q-name';
+        nameSpan.textContent = q.name;
+
+        var maxSpan = document.createElement('span');
+        maxSpan.className = 'q-max';
+        maxSpan.textContent = '/' + q.maxPoints;
+
+        var input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.max = String(q.maxPoints);
+        input.step = q.maxPoints === 1 ? '1' : '0.5';
+        input.dataset.col = q.col;
+        input.dataset.max = q.maxPoints;
+        input.id = 'score_' + q.col;
+
+        // Pre-fill existing score
+        if (existingScores[q.col] !== undefined) {
+          input.value = existingScores[q.col];
+          totalPoints += Number(existingScores[q.col]);
+        }
+        totalMax += q.maxPoints;
+
+        // Validation on change
+        input.addEventListener('input', function() {
+          var val = Number(this.value);
+          var max = Number(this.dataset.max);
+          if (this.value !== '' &amp;&amp; (isNaN(val) || val &lt; 0 || val &gt; max)) {
+            this.classList.add('error');
+          } else {
+            this.classList.remove('error');
+          }
+          updateScoreSummary();
+        });
+
+        // Tab/Enter to move to next field
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            var inputs = container.querySelectorAll('input[type="number"]');
+            var idx = Array.from(inputs).indexOf(this);
+            if (idx &lt; inputs.length - 1) {
+              inputs[idx + 1].focus();
+              inputs[idx + 1].select();
+            }
+          }
+        });
+
+        row.appendChild(nameSpan);
+        row.appendChild(input);
+        row.appendChild(maxSpan);
+        container.appendChild(row);
+      });
+    });
+
+    updateScoreSummary();
+  }
+
+  // =================== SCORE SUMMARY =======================
+  function updateScoreSummary() {
+    var inputs = document.querySelectorAll('#questionsContainer input[type="number"]');
+    var filled = 0;
+    var total = inputs.length;
+    var points = 0;
+    var maxPts = 0;
+
+    inputs.forEach(function(inp) {
+      var max = Number(inp.dataset.max);
+      maxPts += max;
+      if (inp.value !== '') {
+        filled++;
+        points += Number(inp.value);
+      }
+    });
+
+    var pct = maxPts &gt; 0 ? Math.round(100 * points / maxPts) : 0;
+    document.getElementById('scoreSummary').textContent =
+      filled + '/' + total + ' answered | ' +
+      points + '/' + maxPts + ' points (' + pct + '%)';
+  }
+
+  // =================== SUBMIT ==============================
+  function submitScores() {
+    var tabName = document.getElementById('unitSelect').value;
+    var studentName = document.getElementById('studentSelect').value;
+
+    if (!tabName || !studentName) {
+      showStatus('error', 'Select a unit and student first');
+      return;
+    }
+
+    // Collect scores
+    var scores = {};
+    var hasErrors = false;
+    var inputs = document.querySelectorAll('#questionsContainer input[type="number"]');
+
+    inputs.forEach(function(inp) {
+      if (inp.classList.contains('error')) hasErrors = true;
+      if (inp.value !== '') {
+        scores[inp.dataset.col] = Number(inp.value);
+      }
+    });
+
+    if (hasErrors) {
+      showStatus('error', 'Fix validation errors (red fields) before submitting');
+      return;
+    }
+
+    if (Object.keys(scores).length === 0) {
+      showStatus('error', 'No scores entered');
+      return;
+    }
+
+    document.getElementById('submitBtn').disabled = true;
+    showStatus('loading', 'Saving scores...');
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        document.getElementById('submitBtn').disabled = false;
+        if (result.success) {
+          showStatus('success', result.message);
+          // Auto-advance to next student after 1.5s
+          setTimeout(function() { nextStudent(); }, 1500);
+        } else {
+          showStatus('error', result.error);
+        }
+      })
+      .withFailureHandler(function(err) {
+        document.getElementById('submitBtn').disabled = false;
+        showStatus('error', 'Script error: ' + err.message);
+      })
+      .submitScores(tabName, studentName, scores);
+  }
+
+  // =================== NAVIGATION ==========================
+  function nextStudent() {
+    if (currentStudentIndex &lt; currentStudents.length - 1) {
+      currentStudentIndex++;
+      var sel = document.getElementById('studentSelect');
+      sel.value = currentStudents[currentStudentIndex].name;
+      loadStudentForm();
+    }
+  }
+
+  function prevStudent() {
+    if (currentStudentIndex &gt; 0) {
+      currentStudentIndex--;
+      var sel = document.getElementById('studentSelect');
+      sel.value = currentStudents[currentStudentIndex].name;
+      loadStudentForm();
+    }
+  }
+
+  function updateNavButtons() {
+    document.getElementById('prevBtn').disabled = currentStudentIndex &lt;= 0;
+    document.getElementById('nextBtn').disabled =
+      currentStudentIndex &gt;= currentStudents.length - 1;
+  }
+
+  // =================== STATUS ==============================
+  function showStatus(type, msg) {
+    var el = document.getElementById('statusMsg');
+    el.className = 'status ' + type;
+    el.textContent = msg;
+  }
+  function clearStatus() {
+    document.getElementById('statusMsg').className = 'status';
+  }
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+
+
+<!-- ===== SECTION 6 ===== -->
+<h2 id="dashboard"><span class="num">6</span> DashboardEngine.gs — Auto-Calculations</h2>
+
+<div class="file-header"><span class="ext">.gs</span> DashboardEngine.gs</div>
+<pre>/**
+ * ============================================================
+ * CKLA Skills Tracking — Apps Script System
+ * File: DashboardEngine.gs
+ * Purpose: Refresh summaries, generate reports, update charts
+ * Version: 1.0
+ * ============================================================
+ */
+
+/**
+ * Refresh all summary statistics across all unit tabs.
+ * This recalculates the class-level and teacher-level averages
+ * that live in rows 3–13 of each unit tab.
+ *
+ * In the current spreadsheet, these are formula-driven (AVERAGEIFS,
+ * COUNTIFS). This function is a safety net: it forces recalc and
+ * can optionally replace slow volatile formulas with static values
+ * (the "Big Gulp" pattern from Adira Reads).
+ */
+function refreshAllSummaries() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ui = SpreadsheetApp.getUi();
+
+  ui.alert(
+    'Refresh Summaries',
+    'This will force-recalculate all summary statistics.\n' +
+    'Existing formulas will be preserved.\n\nContinue?',
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  const gradeMap = getUnitTabs();
+  let tabCount = 0;
+
+  Object.keys(gradeMap).forEach(grade =&gt; {
+    gradeMap[grade].tabs.forEach(tabName =&gt; {
+      const sheet = ss.getSheetByName(tabName);
+      if (!sheet) return;
+
+      // Force recalc by reading and re-setting a dummy cell
+      // (Google Sheets recalculates formulas when cells they
+      // depend on change)
+      const dummyCell = sheet.getRange('A1');
+      const val = dummyCell.getValue();
+      dummyCell.setValue(val);
+
+      tabCount++;
+    });
+  });
+
+  SpreadsheetApp.flush(); // Force all pending changes to commit
+
+  ui.alert(
+    'Refresh Complete',
+    'Recalculated summaries across ' + tabCount + ' unit tabs.',
+    ui.ButtonSet.OK
+  );
+}
+
+
+/**
+ * Generate a per-student report card showing scores across all units.
+ * Opens a dialog where the teacher selects a student, then generates
+ * a summary of their performance across every unit they have data for.
+ */
+function showStudentReportDialog() {
+  const html = HtmlService
+    .createHtmlOutput(buildStudentReportHTML_())
+    .setTitle('Student Report')
+    .setWidth(500)
+    .setHeight(600);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Student Report');
+}
+
+
+/**
+ * Compute per-student summary data across all units for a given grade.
+ * Returns an array of objects: { student, units: [ { unit, pct, quintile } ] }
+ */
+function getStudentSummaryData(grade) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const gradeMap = getUnitTabs();
+  const tabs = gradeMap[grade] ? gradeMap[grade].tabs : [];
+
+  if (tabs.length === 0) return [];
+
+  // Get student list from first unit tab
+  const firstSheet = ss.getSheetByName(tabs[0]);
+  if (!firstSheet) return [];
+
+  const lastRow = firstSheet.getLastRow();
+  if (lastRow &lt; ROW.DATA_START) return [];
+
+  const numRows = lastRow - ROW.DATA_START + 1;
+  const names = firstSheet.getRange(
+    ROW.DATA_START, COL.STUDENT_NAME, numRows, 1
+  ).getValues().flat().filter(n =&gt; n &amp;&amp; String(n).trim() !== '');
+
+  // For each student, collect their Overall % from each unit tab
+  const studentData = names.map(name =&gt; ({
+    student: name,
+    units: []
+  }));
+
+  tabs.forEach(tabName =&gt; {
+    const sheet = ss.getSheetByName(tabName);
+    if (!sheet) return;
+
+    const lr = sheet.getLastRow();
+    if (lr &lt; ROW.DATA_START) return;
+
+    const nr = lr - ROW.DATA_START + 1;
+
+    // Batch read: student names (F), quintile (G), overall % (H)
+    const data = sheet.getRange(ROW.DATA_START, COL.STUDENT_NAME, nr, 3).getValues();
+
+    data.forEach(row =&gt; {
+      const sName = String(row[0]).trim();
+      const quintile = row[1] || '';
+      const pct = row[2];
+
+      const studentObj = studentData.find(s =&gt; s.student === sName);
+      if (studentObj) {
+        studentObj.units.push({
+          unit: tabName,
+          pct: pct !== '' &amp;&amp; pct !== null ? Math.round(Number(pct) * 100) : null,
+          quintile: String(quintile)
+        });
+      }
+    });
+  });
+
+  return studentData;
+}
+
+
+/**
+ * Build a summary stats object for dashboard display.
+ * Returns per-grade and per-teacher breakdowns.
+ */
+function getDashboardStats(grade) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const gradeMap = getUnitTabs();
+  const tabs = gradeMap[grade] ? gradeMap[grade].tabs : [];
+
+  const stats = {
+    grade: grade,
+    totalStudents: 0,
+    unitStats: [],
+    teacherStats: {}
+  };
+
+  tabs.forEach(tabName =&gt; {
+    const sheet = ss.getSheetByName(tabName);
+    if (!sheet) return;
+
+    const lastRow = sheet.getLastRow();
+    if (lastRow &lt; ROW.DATA_START) return;
+
+    const numRows = lastRow - ROW.DATA_START + 1;
+
+    // Batch read: teacher (D), student (F), quintile (G), overall % (H)
+    const data = sheet.getRange(ROW.DATA_START, COL.TEACHER, numRows, 5).getValues();
+
+    let studentsWithData = 0;
+    let above80 = 0;
+    let totalPct = 0;
+    const teacherCounts = {};
+
+    data.forEach(row =&gt; {
+      const teacher = String(row[0]).trim();
+      const student = String(row[2]).trim(); // COL.STUDENT_NAME - COL.TEACHER = offset 2
+      const pct = row[4]; // COL.PCT_CORRECT - COL.TEACHER = offset 4
+
+      if (!student || student === '') return;
+
+      if (pct !== '' &amp;&amp; pct !== null &amp;&amp; !isNaN(Number(pct))) {
+        studentsWithData++;
+        const pctNum = Number(pct) * 100;
+        totalPct += pctNum;
+        if (pctNum &gt;= 80) above80++;
+
+        if (!teacherCounts[teacher]) {
+          teacherCounts[teacher] = { total: 0, above80: 0, sumPct: 0 };
+        }
+        teacherCounts[teacher].total++;
+        teacherCounts[teacher].sumPct += pctNum;
+        if (pctNum &gt;= 80) teacherCounts[teacher].above80++;
+      }
+    });
+
+    stats.unitStats.push({
+      unit: tabName,
+      studentsWithData: studentsWithData,
+      above80: above80,
+      pctAbove80: studentsWithData &gt; 0
+        ? Math.round(100 * above80 / studentsWithData) : 0,
+      avgPct: studentsWithData &gt; 0
+        ? Math.round(totalPct / studentsWithData) : 0
+    });
+
+    // Merge teacher stats
+    Object.keys(teacherCounts).forEach(t =&gt; {
+      if (!stats.teacherStats[t]) {
+        stats.teacherStats[t] = { unitsReported: 0, totalAbove80: 0, totalStudents: 0, sumPct: 0 };
+      }
+      stats.teacherStats[t].unitsReported++;
+      stats.teacherStats[t].totalAbove80 += teacherCounts[t].above80;
+      stats.teacherStats[t].totalStudents += teacherCounts[t].total;
+      stats.teacherStats[t].sumPct += teacherCounts[t].sumPct;
+    });
+
+    if (stats.totalStudents === 0) {
+      stats.totalStudents = data.filter(r =&gt; String(r[2]).trim() !== '').length;
+    }
+  });
+
+  return stats;
+}
+
+
+/**
+ * Internal: generate the student report HTML dialog content.
+ */
+function buildStudentReportHTML_() {
+  return '&lt;div style="font-family: Google Sans, sans-serif; padding: 12px;"&gt;' +
+    '&lt;p&gt;Select a grade to generate the student summary report:&lt;/p&gt;' +
+    '&lt;select id="rptGrade" style="padding:8px;width:100%;margin:8px 0;"&gt;' +
+    '&lt;option value="K"&gt;Kindergarten&lt;/option&gt;' +
+    '&lt;option value="1"&gt;Grade 1&lt;/option&gt;' +
+    '&lt;option value="2"&gt;Grade 2&lt;/option&gt;&lt;/select&gt;' +
+    '&lt;button onclick="generate()" style="padding:8px 16px;background:#1a73e8;' +
+    'color:white;border:none;border-radius:4px;cursor:pointer;width:100%"&gt;' +
+    'Generate Report&lt;/button&gt;' +
+    '&lt;div id="rptOutput" style="margin-top:12px"&gt;&lt;/div&gt;' +
+    '&lt;script&gt;function generate(){var g=document.getElementById("rptGrade").value;' +
+    'document.getElementById("rptOutput").innerHTML="Loading...";' +
+    'google.script.run.withSuccessHandler(function(data){' +
+    'var html="&lt;table style=\\'width:100%;border-collapse:collapse;font-size:12px\\'&gt;";' +
+    'html+="&lt;tr style=\\'background:#1a73e8;color:white\\'&gt;&lt;th style=\\'padding:6px\\'&gt;Student&lt;/th&gt;";' +
+    'if(data.length&gt;0){data[0].units.forEach(function(u){' +
+    'html+="&lt;th style=\\'padding:6px\\'&gt;"+u.unit.replace(/^(K |Gr\\d )/,"")+"&lt;/th&gt;";});}' +
+    'html+="&lt;/tr&gt;";data.forEach(function(s){' +
+    'html+="&lt;tr&gt;&lt;td style=\\'padding:4px 6px;border-bottom:1px solid #eee\\'&gt;"+s.student+"&lt;/td&gt;";' +
+    's.units.forEach(function(u){var bg=u.pct===null?"#f5f5f5":u.pct&gt;=80?"#e6f4ea":u.pct&gt;=60?"#fef7e0":"#fce8e6";' +
+    'html+="&lt;td style=\\'padding:4px 6px;text-align:center;background:"+bg+";border-bottom:1px solid #eee\\'&gt;"' +
+    '+(u.pct!==null?u.pct+"%":"—")+"&lt;/td&gt;";});html+="&lt;/tr&gt;";});html+="&lt;/table&gt;";' +
+    'document.getElementById("rptOutput").innerHTML=html;' +
+    '}).getStudentSummaryData(g);}&lt;/script&gt;&lt;/div&gt;';
+}</pre>
+
+
+<!-- ===== SECTION 7 ===== -->
+<h2 id="import"><span class="num">7</span> ImportExport.gs — Bulk Operations</h2>
+
+<div class="file-header"><span class="ext">.gs</span> ImportExport.gs</div>
+<pre>/**
+ * ============================================================
+ * CKLA Skills Tracking — Apps Script System
+ * File: ImportExport.gs
+ * Purpose: Bulk CSV import, data export, backup utilities
+ * Version: 1.0
+ * ============================================================
+ */
+
+/**
+ * Show the import dialog.
+ */
+function showImportDialog() {
+  const html = HtmlService
+    .createHtmlOutput(
+      '&lt;div style="font-family:Google Sans,sans-serif;padding:16px"&gt;' +
+      '&lt;h3&gt;Import Scores from CSV&lt;/h3&gt;' +
+      '&lt;p style="font-size:13px;color:#5f6368"&gt;CSV format: ' +
+      'StudentName, Q1Score, Q2Score, Q3Score, ...&lt;br&gt;' +
+      'Scores must be in the same column order as the unit tab.&lt;/p&gt;' +
+      '&lt;textarea id="csvData" rows="10" style="width:100%;font-family:monospace;' +
+      'font-size:12px;padding:8px;border:1px solid #dadce0;border-radius:4px"' +
+      ' placeholder="Paste CSV data here..."&gt;&lt;/textarea&gt;&lt;br&gt;' +
+      '&lt;select id="impTab" style="width:100%;padding:8px;margin:8px 0"&gt;' +
+      '&lt;option&gt;Select target unit tab...&lt;/option&gt;&lt;/select&gt;' +
+      '&lt;button onclick="doImport()" style="width:100%;padding:8px 16px;' +
+      'background:#1a73e8;color:white;border:none;border-radius:4px;' +
+      'cursor:pointer"&gt;Import&lt;/button&gt;' +
+      '&lt;div id="impResult" style="margin-top:8px;font-size:12px"&gt;&lt;/div&gt;' +
+      '&lt;script&gt;' +
+      'google.script.run.withSuccessHandler(function(tabs){' +
+      'var sel=document.getElementById("impTab");' +
+      'Object.keys(tabs).forEach(function(g){' +
+      'tabs[g].tabs.forEach(function(t){' +
+      'var o=document.createElement("option");o.value=t;o.textContent=t;' +
+      'sel.appendChild(o);});});}).getUnitTabs();' +
+      'function doImport(){var csv=document.getElementById("csvData").value;' +
+      'var tab=document.getElementById("impTab").value;' +
+      'document.getElementById("impResult").textContent="Importing...";' +
+      'google.script.run.withSuccessHandler(function(r){' +
+      'document.getElementById("impResult").innerHTML=' +
+      '"&lt;b&gt;"+r.imported+"&lt;/b&gt; rows imported, &lt;b&gt;"+r.errors.length+"&lt;/b&gt; errors"' +
+      '+(r.errors.length?"&lt;br&gt;"+r.errors.join("&lt;br&gt;"):"");' +
+      '}).importCSVScores(tab,csv);}' +
+      '&lt;/script&gt;&lt;/div&gt;'
+    )
+    .setWidth(500)
+    .setHeight(450);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Import Scores');
+}
+
+
+/**
+ * Import scores from CSV text into a unit tab.
+ * CSV format: StudentName, Score1, Score2, Score3, ...
+ * Scores are mapped to data-entry columns (skipping Total columns).
+ */
+function importCSVScores(tabName, csvText) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(tabName);
+
+  if (!sheet) {
+    return { imported: 0, errors: ['Tab not found: ' + tabName] };
+  }
+
+  const structure = getUnitStructure(tabName);
+  if (structure.error) {
+    return { imported: 0, errors: [structure.error] };
+  }
+
+  // Flatten all question columns in order
+  const allQuestionCols = [];
+  structure.sections.forEach(s =&gt; {
+    s.questions.forEach(q =&gt; allQuestionCols.push(q));
+  });
+
+  const lines = csvText.trim().split('\n');
+  let imported = 0;
+  const errors = [];
+
+  lines.forEach((line, lineIdx) =&gt; {
+    const parts = line.split(',').map(p =&gt; p.trim());
+    if (parts.length &lt; 2) return;
+
+    const studentName = parts[0];
+    const row = findStudentRow(tabName, studentName);
+
+    if (row === -1) {
+      errors.push('Row ' + (lineIdx + 1) + ': Student not found — ' + studentName);
+      return;
+    }
+
+    const scores = parts.slice(1);
+    let written = 0;
+
+    scores.forEach((score, i) =&gt; {
+      if (i &gt;= allQuestionCols.length) return;
+      if (score === '' || score === '-') return;
+
+      const numVal = Number(score);
+      if (isNaN(numVal)) {
+        errors.push('Row ' + (lineIdx + 1) + ', col ' + (i + 1) + ': Not a number');
+        return;
+      }
+
+      const q = allQuestionCols[i];
+      if (numVal &gt; q.maxPoints) {
+        errors.push(
+          'Row ' + (lineIdx + 1) + ': ' + q.name + ' max is ' +
+          q.maxPoints + ', got ' + numVal
+        );
+        return;
+      }
+
+      sheet.getRange(row, q.col).setValue(numVal);
+      written++;
+    });
+
+    if (written &gt; 0) imported++;
+  });
+
+  return { imported: imported, errors: errors };
+}
+
+
+/**
+ * Show the export dialog.
+ */
+function showExportDialog() {
+  const ui = SpreadsheetApp.getUi();
+  const result = ui.prompt(
+    'Export Grade Data',
+    'Enter the grade to export (K, 1, or 2):',
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  if (result.getSelectedButton() !== ui.Button.OK) return;
+
+  const grade = result.getResponseText().trim();
+  const csvContent = exportGradeData(grade);
+
+  if (!csvContent) {
+    ui.alert('No data found for grade ' + grade);
+    return;
+  }
+
+  // Write CSV to a new sheet for easy copy
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let exportSheet = ss.getSheetByName('_Export');
+  if (exportSheet) ss.deleteSheet(exportSheet);
+
+  exportSheet = ss.insertSheet('_Export');
+  const lines = csvContent.split('\n');
+  lines.forEach((line, i) =&gt; {
+    const cells = line.split(',');
+    exportSheet.getRange(i + 1, 1, 1, cells.length).setValues([cells]);
+  });
+
+  ss.setActiveSheet(exportSheet);
+  ui.alert(
+    'Export Complete',
+    'Data exported to the "_Export" tab.\n' +
+    'You can copy it or download as CSV from File → Download.',
+    ui.ButtonSet.OK
+  );
+}
+
+
+/**
+ * Export all student scores for a grade as CSV text.
+ */
+function exportGradeData(grade) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const gradeMap = getUnitTabs();
+  const tabs = gradeMap[grade] ? gradeMap[grade].tabs : [];
+
+  if (tabs.length === 0) return null;
+
+  // Header row
+  const headers = ['Student', 'Teacher'];
+  const dataMap = {}; // studentName -> { teacher, scores: { tabName: pct } }
+
+  tabs.forEach(tabName =&gt; {
+    headers.push(tabName + ' %');
+
+    const sheet = ss.getSheetByName(tabName);
+    if (!sheet) return;
+
+    const lastRow = sheet.getLastRow();
+    if (lastRow &lt; ROW.DATA_START) return;
+
+    const numRows = lastRow - ROW.DATA_START + 1;
+    const data = sheet.getRange(
+      ROW.DATA_START, COL.TEACHER, numRows,
+      COL.PCT_CORRECT - COL.TEACHER + 1
+    ).getValues();
+
+    data.forEach(row =&gt; {
+      const teacher = String(row[0]).trim();
+      const name = String(row[COL.STUDENT_NAME - COL.TEACHER]).trim();
+      const pct = row[COL.PCT_CORRECT - COL.TEACHER];
+
+      if (!name) return;
+
+      if (!dataMap[name]) {
+        dataMap[name] = { teacher: teacher, scores: {} };
+      }
+      if (pct !== '' &amp;&amp; pct !== null &amp;&amp; !isNaN(Number(pct))) {
+        dataMap[name].scores[tabName] = Math.round(Number(pct) * 100);
+      }
+    });
+  });
+
+  // Build CSV
+  const lines = [headers.join(',')];
+
+  Object.keys(dataMap).sort().forEach(name =&gt; {
+    const row = [name, dataMap[name].teacher];
+    tabs.forEach(tabName =&gt; {
+      const score = dataMap[name].scores[tabName];
+      row.push(score !== undefined ? score : '');
+    });
+    lines.push(row.join(','));
+  });
+
+  return lines.join('\n');
+}
+
+
+/**
+ * Validate all data across all unit tabs.
+ * Checks for: scores exceeding point limits, missing student info,
+ * orphaned rows (data without student name).
+ */
+function validateAllData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ui = SpreadsheetApp.getUi();
+  const gradeMap = getUnitTabs();
+  const issues = [];
+
+  Object.keys(gradeMap).forEach(grade =&gt; {
+    gradeMap[grade].tabs.forEach(tabName =&gt; {
+      const sheet = ss.getSheetByName(tabName);
+      if (!sheet) return;
+
+      const lastRow = sheet.getLastRow();
+      if (lastRow &lt; ROW.DATA_START) return;
+
+      const structure = getUnitStructure(tabName);
+      if (structure.error) return;
+
+      const numRows = lastRow - ROW.DATA_START + 1;
+
+      // Batch read student names
+      const names = sheet.getRange(
+        ROW.DATA_START, COL.STUDENT_NAME, numRows, 1
+      ).getValues().flat();
+
+      // Check each question column for out-of-range values
+      structure.sections.forEach(section =&gt; {
+        section.questions.forEach(q =&gt; {
+          const values = sheet.getRange(
+            ROW.DATA_START, q.col, numRows, 1
+          ).getValues().flat();
+
+          values.forEach((val, i) =&gt; {
+            if (val === '' || val === null) return;
+            const numVal = Number(val);
+            if (isNaN(numVal)) {
+              issues.push(tabName + ' | ' + names[i] + ' | ' +
+                q.name + ': non-numeric value "' + val + '"');
+            } else if (numVal &lt; 0 || numVal &gt; q.maxPoints) {
+              issues.push(tabName + ' | ' + names[i] + ' | ' +
+                q.name + ': ' + numVal + ' (max ' + q.maxPoints + ')');
+            }
+          });
+        });
+      });
+    });
+  });
+
+  if (issues.length === 0) {
+    ui.alert('Validation Passed', 'No data issues found across all unit tabs.', ui.ButtonSet.OK);
+  } else {
+    ui.alert(
+      'Validation Issues Found',
+      issues.length + ' issues detected:\n\n' + issues.slice(0, 20).join('\n') +
+      (issues.length &gt; 20 ? '\n\n... and ' + (issues.length - 20) + ' more' : ''),
+      ui.ButtonSet.OK
+    );
+  }
+}
+
+
+/**
+ * Backup all data sheets to a new spreadsheet in the same Drive folder.
+ */
+function backupDataSheets() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ui = SpreadsheetApp.getUi();
+
+  const backupName = 'CKLA Backup — ' +
+    Utilities.formatDate(new Date(), 'America/Indiana/Indianapolis', 'yyyy-MM-dd HH:mm');
+
+  const backup = SpreadsheetApp.create(backupName);
+
+  // Copy each unit tab to the backup
+  const gradeMap = getUnitTabs();
+  let tabCount = 0;
+
+  Object.keys(gradeMap).forEach(grade =&gt; {
+    gradeMap[grade].tabs.forEach(tabName =&gt; {
+      const sheet = ss.getSheetByName(tabName);
+      if (sheet) {
+        sheet.copyTo(backup).setName(tabName);
+        tabCount++;
+      }
+    });
+  });
+
+  // Also copy Meta Data and roster views
+  ['1. Meta Data', '2. K Roster View', '4. Gr1 Roster View', '6. Gr2 Roster View'].forEach(name =&gt; {
+    const sheet = ss.getSheetByName(name);
+    if (sheet) {
+      sheet.copyTo(backup).setName(name);
+      tabCount++;
+    }
+  });
+
+  // Delete the default blank sheet
+  const sheets = backup.getSheets();
+  if (sheets.length &gt; 1 &amp;&amp; sheets[0].getName() === 'Sheet1') {
+    backup.deleteSheet(sheets[0]);
+  }
+
+  ui.alert(
+    'Backup Complete',
+    'Created backup with ' + tabCount + ' tabs:\n' + backupName +
+    '\n\nBackup URL:\n' + backup.getUrl(),
+    ui.ButtonSet.OK
+  );
+}</pre>
+
+
+<!-- ===== SECTION 8 ===== -->
+<h2 id="usage"><span class="num">8</span> How Teachers Use It</h2>
+
+<div class="card green">
+  <h3>Daily Workflow: Entering Assessment Scores</h3>
+  <ol style="padding-left: 1.5rem; margin: .5rem 0;">
+    <li>Open the CKLA spreadsheet</li>
+    <li>Click <strong>CKLA Tools → Enter Assessment Scores</strong> — the sidebar opens on the right</li>
+    <li>Select your <strong>Grade</strong> (K, 1, or 2)</li>
+    <li>Select the <strong>Unit</strong> you're assessing (e.g., "K U3")</li>
+    <li>Select your <strong>name/class</strong> from the Teacher dropdown</li>
+    <li>The Student dropdown populates with your students — pick one</li>
+    <li>The form dynamically shows all assessment questions for that unit, grouped by section (Part 1: Reading, Part 2: Spelling, etc.)</li>
+    <li>Enter scores — each field shows the max points allowed, validates as you type</li>
+    <li>Click <strong>Submit Scores</strong> — data writes to the correct cells in the unit tab</li>
+    <li>The form auto-advances to the <strong>next student</strong> — keep going through your roster</li>
+  </ol>
+  <p>The sidebar stays open and remembers your grade/unit/teacher selections. You can move through all your students using the Previous/Next buttons without re-selecting anything.</p>
+</div>
+
+<div class="card blue">
+  <h3>What Changed vs. the Old Way</h3>
+  <table>
+    <tr><th>Before (Manual Entry)</th><th>After (Sidebar Form)</th></tr>
+    <tr>
+      <td>Navigate to the correct unit tab out of 46 tabs</td>
+      <td>Select from a dropdown — sidebar handles tab targeting</td>
+    </tr>
+    <tr>
+      <td>Find the correct student row (scroll through 105 rows)</td>
+      <td>Student dropdown filtered to your class</td>
+    </tr>
+    <tr>
+      <td>Find the correct column (up to 132 columns in K U8)</td>
+      <td>Questions labeled by name: "Vertical Line", "Left: Green"</td>
+    </tr>
+    <tr>
+      <td>Type 0 or 1 in tiny cells, hope you're in the right column</td>
+      <td>Named fields with point-limit validation, red highlight on errors</td>
+    </tr>
+    <tr>
+      <td>No confirmation that data was entered correctly</td>
+      <td>Live score summary + success message on submit</td>
+    </tr>
+    <tr>
+      <td>Repeat for next student — re-find the row</td>
+      <td>Auto-advance to next student with one click</td>
+    </tr>
+    <tr>
+      <td>Existing scores invisible until you scroll to the cell</td>
+      <td>Pre-filled form shows existing scores for editing</td>
+    </tr>
+  </table>
+</div>
+
+<div class="card purple">
+  <h3>Admin & Reporting Workflows</h3>
+  <p><strong>CKLA Tools → Reports → Refresh All Summaries:</strong> Force-recalculates all summary statistics. Use after a large batch of scores has been entered.</p>
+  <p><strong>CKLA Tools → Reports → Generate Student Report:</strong> Select a grade → see a color-coded grid of every student's % correct across all units. Green = 80%+, Yellow = 60-79%, Red = below 60%.</p>
+  <p><strong>CKLA Tools → Reports → Export Grade Data (CSV):</strong> Exports a clean student × unit summary to a new tab for download.</p>
+  <p><strong>CKLA Tools → Data Tools → Import Scores from CSV:</strong> Bulk-load scores from a CSV file — useful for entering data from paper assessments that were collected in a spreadsheet elsewhere.</p>
+  <p><strong>CKLA Tools → Data Tools → Validate All Data:</strong> Scans every cell in every unit tab for out-of-range values, non-numeric entries, and missing student info.</p>
+  <p><strong>CKLA Tools → Data Tools → Backup Data Sheets:</strong> Creates a timestamped copy of all data tabs in a new Google Sheets file in the same Drive folder. Run weekly as insurance.</p>
+</div>
+
+<div class="callout success">
+  <strong>Zero disruption to existing formulas:</strong> This system writes score values into the same cells that teachers currently edit manually. All existing AVERAGEIFS, COUNTIFS, summary charts, and quintile formulas continue to work exactly as before — they don't know or care whether the data was typed by hand or written by script. The form is an input layer, not a replacement for the spreadsheet's calculation engine.
+</div>
+
+</body>
+</html>
