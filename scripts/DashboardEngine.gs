@@ -3,7 +3,7 @@
  * CKLA Skills Tracking — Apps Script System
  * File: DashboardEngine.gs
  * Purpose: Refresh summaries, generate reports, update charts
- * Version: 1.0
+ * Version: 2.0 (Phase 3 — enhanced student progress dashboard)
  * ============================================================
  */
 
@@ -219,7 +219,92 @@ function getDashboardStats(grade) {
 
 
 /**
+ * Show the individual student progress dialog.
+ * Opens an enhanced dialog where the teacher selects a grade and
+ * individual student, then sees a detailed progress view with
+ * a visual trend line and mastery breakdown.
+ */
+function showStudentProgressDialog() {
+  var html = HtmlService
+    .createHtmlOutput(buildStudentProgressHTML_())
+    .setTitle('Student Progress')
+    .setWidth(600)
+    .setHeight(650);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Individual Student Progress');
+}
+
+
+/**
+ * Get detailed progress data for a single student across all units.
+ *
+ * @param {string} grade        Grade key ('K', '1', or '2')
+ * @param {string} studentName  Student name (Last, First)
+ * @returns {Object} { student, grade, units: [ { unit, pct, quintile } ], trend, masteryBreakdown }
+ */
+function getIndividualStudentProgress(grade, studentName) {
+  var allData = getStudentSummaryData(grade);
+  var studentObj = null;
+
+  for (var i = 0; i < allData.length; i++) {
+    if (allData[i].student === studentName) {
+      studentObj = allData[i];
+      break;
+    }
+  }
+
+  if (!studentObj) {
+    return { student: studentName, grade: grade, units: [], trend: 'N/A', masteryBreakdown: {} };
+  }
+
+  // Calculate trend
+  var scores = studentObj.units
+    .filter(function(u) { return u.pct !== null; })
+    .map(function(u) { return u.pct; });
+
+  var trend = 'N/A';
+  if (scores.length >= 2) {
+    var firstHalf = scores.slice(0, Math.ceil(scores.length / 2));
+    var secondHalf = scores.slice(Math.ceil(scores.length / 2));
+    var firstAvg = firstHalf.reduce(function(a, b) { return a + b; }, 0) / firstHalf.length;
+    var secondAvg = secondHalf.reduce(function(a, b) { return a + b; }, 0) / secondHalf.length;
+    var diff = Math.round(secondAvg - firstAvg);
+    trend = diff > 0 ? 'Improving (+' + diff + '%)' : diff < 0 ? 'Declining (' + diff + '%)' : 'Stable';
+  }
+
+  // Mastery breakdown
+  var breakdown = { above80: 0, at60to79: 0, below60: 0, noData: 0 };
+  studentObj.units.forEach(function(u) {
+    if (u.pct === null) breakdown.noData++;
+    else if (u.pct >= 80) breakdown.above80++;
+    else if (u.pct >= 60) breakdown.at60to79++;
+    else breakdown.below60++;
+  });
+
+  return {
+    student: studentObj.student,
+    grade: grade,
+    units: studentObj.units,
+    trend: trend,
+    masteryBreakdown: breakdown
+  };
+}
+
+
+/**
+ * Get list of student names for a given grade (used for dropdown).
+ *
+ * @param {string} grade  Grade key ('K', '1', or '2')
+ * @returns {Array<string>} Array of student names
+ */
+function getStudentListForGrade(grade) {
+  var data = getStudentSummaryData(grade);
+  return data.map(function(s) { return s.student; });
+}
+
+
+/**
  * Internal: generate the student report HTML dialog content.
+ * (Original class-wide report — retained for backward compatibility.)
  */
 function buildStudentReportHTML_() {
   return '<div style="font-family: Google Sans, sans-serif; padding: 12px;">' +
@@ -246,4 +331,83 @@ function buildStudentReportHTML_() {
     '+(u.pct!==null?u.pct+"%":"—")+"</td>";});html+="</tr>";});html+="</table>";' +
     'document.getElementById("rptOutput").innerHTML=html;' +
     '}).getStudentSummaryData(g);}</script></div>';
+}
+
+
+/**
+ * Internal: generate the individual student progress HTML dialog content.
+ * Includes a dropdown for student selection and a visual progress chart.
+ */
+function buildStudentProgressHTML_() {
+  return '<div style="font-family:Google Sans,sans-serif;padding:12px;">' +
+    '<h3 style="margin:0 0 8px;color:#1a73e8;">Individual Student Progress</h3>' +
+    '<p style="font-size:13px;color:#555;">Select a grade and student to view their progress across all units.</p>' +
+    '<select id="spGrade" style="padding:8px;width:100%;margin:4px 0;" onchange="loadStudents()">' +
+    '<option value="K">Kindergarten</option>' +
+    '<option value="1">Grade 1</option>' +
+    '<option value="2">Grade 2</option></select>' +
+    '<select id="spStudent" style="padding:8px;width:100%;margin:4px 0;">' +
+    '<option value="">Select Student…</option></select>' +
+    '<button onclick="showProgress()" style="padding:8px 16px;background:#1a73e8;' +
+    'color:white;border:none;border-radius:4px;cursor:pointer;width:100%;margin:8px 0;">' +
+    'Show Progress</button>' +
+    '<div id="spOutput" style="max-height:400px;overflow-y:auto;"></div>' +
+    '<script>' +
+    'function loadStudents(){' +
+    'var g=document.getElementById("spGrade").value;' +
+    'var sel=document.getElementById("spStudent");' +
+    'sel.innerHTML="<option value=\\'\\'>Loading…</option>";' +
+    'google.script.run.withSuccessHandler(function(names){' +
+    'sel.innerHTML="<option value=\\'\\'>Select Student…</option>";' +
+    'names.forEach(function(n){sel.innerHTML+="<option value=\\'"+n+"\\'>"+n+"</option>";});' +
+    '}).getStudentListForGrade(g);}' +
+    'function showProgress(){' +
+    'var g=document.getElementById("spGrade").value;' +
+    'var s=document.getElementById("spStudent").value;' +
+    'if(!s){document.getElementById("spOutput").innerHTML=' +
+    '"<p style=\\'color:#c5221f;\\'>Please select a student.</p>";return;}' +
+    'document.getElementById("spOutput").innerHTML="<p>Loading…</p>";' +
+    'google.script.run.withSuccessHandler(function(d){' +
+    'var h="";' +
+    // Student header
+    'h+="<div style=\\'background:#e8f0fe;padding:12px;border-radius:8px;margin-bottom:12px;\\'>";' +
+    'h+="<h4 style=\\'margin:0;color:#1a73e8;\\'>"+d.student+"</h4>";' +
+    'h+="<p style=\\'margin:4px 0 0;font-size:13px;\\'>Trend: <strong>"+d.trend+"</strong></p></div>";' +
+    // Mastery breakdown
+    'var mb=d.masteryBreakdown;' +
+    'h+="<div style=\\'display:flex;gap:8px;margin-bottom:12px;text-align:center;font-size:12px;\\'>";' +
+    'h+="<div style=\\'flex:1;background:#e6f4ea;padding:8px;border-radius:6px;\\'>"' +
+    '+"<div style=\\'font-size:20px;font-weight:bold;color:#137333;\\'>"+mb.above80+"</div>Mastery</div>";' +
+    'h+="<div style=\\'flex:1;background:#fef7e0;padding:8px;border-radius:6px;\\'>"' +
+    '+"<div style=\\'font-size:20px;font-weight:bold;color:#856404;\\'>"+mb.at60to79+"</div>Approaching</div>";' +
+    'h+="<div style=\\'flex:1;background:#fce8e6;padding:8px;border-radius:6px;\\'>"' +
+    '+"<div style=\\'font-size:20px;font-weight:bold;color:#c5221f;\\'>"+mb.below60+"</div>Below</div></div>";' +
+    // Visual bar chart
+    'h+="<h4 style=\\'margin:8px 0 4px;color:#333;\\'>Performance by Unit</h4>";' +
+    'd.units.forEach(function(u){' +
+    'var label=u.unit.replace(/^(K |Gr\\d )/,"");' +
+    'var pct=u.pct!==null?u.pct:0;' +
+    'var color=u.pct===null?"#ccc":u.pct>=80?"#34a853":u.pct>=60?"#fbbc04":"#ea4335";' +
+    'h+="<div style=\\'margin-bottom:6px;\\'>"' +
+    '+"<div style=\\'display:flex;justify-content:space-between;font-size:12px;\\'>"' +
+    '+"<span>"+label+"</span><span>"+(u.pct!==null?u.pct+"%":"—")+"</span></div>"' +
+    '+"<div style=\\'background:#eee;border-radius:4px;height:14px;overflow:hidden;\\'>"' +
+    '+"<div style=\\'background:"+color+";height:100%;width:"+pct+"%;border-radius:4px;\\'></div>"' +
+    '+"</div></div>";});' +
+    // Table view
+    'h+="<h4 style=\\'margin:12px 0 4px;color:#333;\\'>Score Details</h4>";' +
+    'h+="<table style=\\'width:100%;border-collapse:collapse;font-size:12px;\\'>"' +
+    '+"<tr style=\\'background:#1a73e8;color:white;\\'><th style=\\'padding:6px;text-align:left;\\'>Unit</th>"' +
+    '+"<th style=\\'padding:6px;\\'>Score</th><th style=\\'padding:6px;\\'>Level</th></tr>";' +
+    'd.units.forEach(function(u){' +
+    'var bg=u.pct===null?"#f5f5f5":u.pct>=80?"#e6f4ea":u.pct>=60?"#fef7e0":"#fce8e6";' +
+    'h+="<tr style=\\'background:"+bg+"\\'>"' +
+    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+u.unit+"</td>"' +
+    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+(u.pct!==null?u.pct+"%":"—")+"</td>"' +
+    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+u.quintile+"</td></tr>";});' +
+    'h+="</table>";' +
+    'document.getElementById("spOutput").innerHTML=h;' +
+    '}).getIndividualStudentProgress(g,s);}' +
+    'loadStudents();' +
+    '</script></div>';
 }

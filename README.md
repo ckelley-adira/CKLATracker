@@ -31,7 +31,11 @@ This tracker addresses the pain points of high-volume manual data entry, cogniti
 | `scripts/NavigationHub.gs` | **Phase 2:** Builds a navigation hub tab with hyperlinks to all tabs and tools |
 | `scripts/TeacherSheetSync.gs` | **Phase 2:** Per-teacher lightweight input sheets with sync-back to master |
 | `scripts/UnitTemplateEngine.gs` | **Phase 2:** Standardized unit templates and automated tab generation |
+| `scripts/SkillDrillDown.gs` | **Phase 3:** Skill-level drill-down dashboards by assessment section |
+| `scripts/TeacherActionReport.gs` | **Phase 3:** Teacher Action Report with class summary, flagged students, skill gaps, action items |
+| `scripts/CohortComparison.gs` | **Phase 3:** Cohort comparison charts by demographic groups with trend analysis |
 | `docs/phase2_onboarding.md` | **Phase 2:** Onboarding guide for teachers on new input workflows |
+| `docs/phase3_reporting.md` | **Phase 3:** Reporting guide for dashboards and report features |
 
 ---
 
@@ -55,6 +59,15 @@ The five core script files provide a complete input and reporting layer on top o
 | `NavigationHub.gs` | `buildNavigationHub()`, `navigateToTab()` |
 | `TeacherSheetSync.gs` | `createTeacherInputSheet()`, `syncAllTeacherInputSheets()`, `showCreateTeacherSheetDialog()`, `cleanupTeacherInputSheets()` |
 | `UnitTemplateEngine.gs` | `generateUnitTab()`, `showUnitGeneratorDialog()`, `buildTabName_()`, `columnToLetter_()` |
+
+### Phase 3 Scripts
+
+| Script | Key Functions |
+|---|---|
+| `DashboardEngine.gs` *(updated)* | `showStudentProgressDialog()`, `getIndividualStudentProgress()`, `getStudentListForGrade()` |
+| `SkillDrillDown.gs` | `showSkillDrillDownDialog()`, `getSkillDrillDownData()`, `getWeakestSkillsSummary()` |
+| `TeacherActionReport.gs` | `showTeacherActionReportDialog()`, `getTeacherActionReportData()`, `generateActionItems_()` |
+| `CohortComparison.gs` | `showCohortComparisonDialog()`, `getCohortComparisonData()`, `getDemographicFields()` |
 
 The script layer **writes to the same cells** teachers currently edit manually, so all existing AVERAGEIFS, COUNTIFS, quintile formulas, and summary charts continue to auto-recalculate with no structural changes required.
 
@@ -83,7 +96,7 @@ Hide tabs, color-code, heat map, protect formulas, data validation, sparklines, 
 Deploy the Apps Script system. Sidebar-based score entry form, Google Form integration, per-teacher input sheets, navigation hub tab, standardized unit templates, CSV import, and backup utilities. See [Phase 2 Onboarding Guide](docs/phase2_onboarding.md) for teacher-facing documentation.
 
 ### Phase 3 — Reporting & Dashboards *(2–4 weeks)*
-Student progress reports (historical view across all units), skill drill-downs by section, teacher action summaries highlighting students below mastery thresholds. Built with Apps Script HTML Service — no external BI tools required.
+Student progress reports (historical view across all units), skill drill-downs by section, teacher action summaries highlighting students below mastery thresholds, and cohort comparison charts. Built with Apps Script HTML Service — no external BI tools required. See [Phase 3 Reporting Guide](docs/phase3_reporting.md) for user-facing documentation.
 
 ### Phase 4 — Scale & Sustainability *(future)*
 Split workbooks per grade for performance, add an audit trail for score edits, create an admin console for tab management, and evaluate migration to a web app (AppSheet, Airtable, or custom) if the spreadsheet model becomes unmanageable.
@@ -107,10 +120,13 @@ To install the Apps Script files into a Google Sheet:
 11. Repeat for `NavigationHub` (paste `scripts/NavigationHub.gs`)
 12. Repeat for `TeacherSheetSync` (paste `scripts/TeacherSheetSync.gs`)
 13. Repeat for `UnitTemplateEngine` (paste `scripts/UnitTemplateEngine.gs`)
-14. Click **+** → **HTML** → name it `ScoreEntryUI` → paste `scripts/ScoreEntryUI.html`
-15. Click **Save** (Ctrl+S / Cmd+S)
-16. Reload the spreadsheet — a new **CKLA Tools** menu will appear in the menu bar
-17. First run: click **CKLA Tools → Enter Assessment Scores** and authorize when prompted
+14. Repeat for `SkillDrillDown` (paste `scripts/SkillDrillDown.gs`)
+15. Repeat for `TeacherActionReport` (paste `scripts/TeacherActionReport.gs`)
+16. Repeat for `CohortComparison` (paste `scripts/CohortComparison.gs`)
+17. Click **+** → **HTML** → name it `ScoreEntryUI` → paste `scripts/ScoreEntryUI.html`
+18. Click **Save** (Ctrl+S / Cmd+S)
+19. Reload the spreadsheet — a new **CKLA Tools** menu will appear in the menu bar
+20. First run: click **CKLA Tools → Enter Assessment Scores** and authorize when prompted
 
 > **Note on authorization:** The first time any function runs, Google will ask you to authorize the script. Click **Advanced → Go to CKLA Skills Tracking (unsafe) → Allow**. This is normal for custom Google Workspace scripts — it needs read/write access to your spreadsheet data.
 

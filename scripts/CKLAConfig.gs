@@ -95,6 +95,13 @@ function onOpen() {
       .addSeparator()
       .addItem('Generate New Unit Tab', 'showUnitGeneratorDialog')
     )
+    .addSubMenu(ui.createMenu('Phase 3 Reports')
+      .addItem('Student Progress (Individual)', 'showStudentProgressDialog')
+      .addItem('Skill Drill-Down by Section', 'showSkillDrillDownDialog')
+      .addItem('Teacher Action Report', 'showTeacherActionReportDialog')
+      .addSeparator()
+      .addItem('Cohort Comparison Charts', 'showCohortComparisonDialog')
+    )
     .addSeparator()
     .addItem('About CKLA Tools v' + CKLA_VERSION, 'showAbout')
     .addToUi();
