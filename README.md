@@ -2,6 +2,14 @@
 
 A Google Sheets–based system for tracking **Core Knowledge Language Arts (CKLA)** skills assessments across **Kindergarten, Grade 1, and Grade 2** at Christel House Indianapolis. The system pairs structured Excel/Google Sheets workbooks with a Google Apps Script layer for sidebar-based score entry, bulk import/export, automated dashboards, and Phase 1 quick-win utilities.
 
+See the [Redesign Plan](ckla_skills_redesign.html) for the full workflow audit, architecture details, and phased roadmap.
+
+---
+
+## Motivation
+
+This tracker addresses the pain points of high-volume manual data entry, cognitive overload in spreadsheet navigation, lack of validation, and missing longitudinal analytics identified in the current system. See the [Redesign Plan](ckla_skills_redesign.html) for the detailed audit and recommendations.
+
 ---
 
 ## Repository Structure
@@ -90,6 +98,22 @@ To install the Apps Script files into a Google Sheet:
 
 ---
 
+## How to Use
+
+- **Day-to-day entry:** Use the sidebar form (CKLA Tools → Enter Assessment Scores), or the converted checkbox grids in unit tabs
+- **Admin users:** Follow the [Apps Script guide](CKLA_Apps_Script_System.html) to install and configure scripts
+- See [ckla_skills_redesign.html](ckla_skills_redesign.html) for full workflow, architecture, pain points, and recommended improvements
+
+---
+
+## For Contributors
+
+- Issues are tracked per phase
+- Scripts are maintained in the `scripts/` folder for version control
+- Please open issues for bugs, feature requests, and process improvements
+
+---
+
 ## Credits
 
-Prepared for **Christina Kelley**, Christel House Indianapolis — March 2026.
+Prepared by **Christina Kelley**, Christel House Indianapolis — March 2026.

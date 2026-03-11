@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CKLA Skills Tracking — Redesign Audit &amp; Roadmap</title>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --accent: #e94560;
+    --blue: #0f3460;
+    --bg: #f8f9fc;
+    --card: #ffffff;
+    --border: #e2e6ee;
+    --green: #2d8a4e;
+    --amber: #d4880f;
+    --red: #c0392b;
+    --purple: #6c3483;
+    --teal: #0e6655;
+    --code-bg: #1e1e2e;
+    --code-fg: #cdd6f4;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.65;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 2rem; color: var(--blue); border-bottom: 3px solid var(--accent); padding-bottom: .5rem; margin-bottom: .25rem; }
+  .subtitle { color: #666; font-size: .95rem; margin-bottom: 2rem; }
+  h2 { font-size: 1.35rem; color: var(--blue); margin: 2.5rem 0 .75rem; display: flex; align-items: center; gap: .5rem; }
+  h2 .num { background: var(--accent); color: white; border-radius: 50%; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0; }
+  h3 { font-size: 1.05rem; color: var(--ink); margin: 1.25rem 0 .5rem; }
+  p { margin-bottom: .75rem; }
+  ul, ol { margin: .5rem 0 1rem 1.5rem; }
+  li { margin-bottom: .35rem; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+  .card.green { border-left: 4px solid var(--green); }
+  .card.blue { border-left: 4px solid var(--blue); }
+  .card.purple { border-left: 4px solid var(--purple); }
+  .card.amber { border-left: 4px solid var(--amber); }
+  .card.red { border-left: 4px solid var(--red); }
+  .card.teal { border-left: 4px solid var(--teal); }
+  code { font-family: 'Consolas', 'Fira Code', 'Courier New', monospace; font-size: .88em; background: #e8ecf4; padding: .1rem .35rem; border-radius: 3px; }
+  .callout { background: #eef3ff; border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; font-size: .92rem; }
+  .callout.warning { background: #fff8e6; border-left: 3px solid var(--amber); }
+  .callout.success { background: #eafaf0; border-left: 3px solid var(--green); }
+  .callout.info { background: #eef3ff; border-left: 3px solid var(--blue); }
+  table { width: 100%; border-collapse: collapse; margin: .75rem 0 1rem; font-size: .88rem; }
+  th { background: var(--blue); color: white; padding: .55rem .7rem; text-align: left; font-weight: 600; }
+  td { padding: .45rem .7rem; border-bottom: 1px solid var(--border); }
+  tr:nth-child(even) td { background: #f4f6fa; }
+  .toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; columns: 2; column-gap: 2rem; }
+  .toc a { display: block; color: var(--blue); text-decoration: none; padding: .2rem 0; font-size: .9rem; }
+  .toc a:hover { color: var(--accent); }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1rem 0; }
+  .stat { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; text-align: center; }
+  .stat .big { font-size: 1.75rem; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: .8rem; color: #777; margin-top: .15rem; }
+  .phase-badge { display: inline-block; padding: .2rem .65rem; border-radius: 4px; font-size: .78rem; font-weight: 600; color: white; margin-right: .5rem; vertical-align: middle; }
+  .phase-badge.p1 { background: var(--green); }
+  .phase-badge.p2 { background: var(--blue); }
+  .phase-badge.p3 { background: var(--purple); }
+  .phase-badge.p4 { background: var(--amber); }
+  @media (max-width: 800px) { body { padding: 1rem; } .toc { columns: 1; } }
+</style>
+</head>
+<body>
+
+<h1>CKLA Skills Tracking — Redesign Audit &amp; Roadmap</h1>
+<p class="subtitle">Workflow Analysis, Pain Points, Phased Improvement Plan &amp; Platform Options &middot; Christel House Indianapolis &middot; March 2026</p>
+
+<div class="toc">
+  <a href="#context">1. System Context &amp; Goals</a>
+  <a href="#audit">2. Current Workflow Audit</a>
+  <a href="#pain">3. Pain Points &amp; Friction Analysis</a>
+  <a href="#architecture">4. Workbook Architecture</a>
+  <a href="#phase1">5. Phase 1 — Quick Wins</a>
+  <a href="#phase2">6. Phase 2 — Input Overhaul</a>
+  <a href="#phase3">7. Phase 3 — Reporting &amp; Dashboards</a>
+  <a href="#phase4">8. Phase 4 — Scale &amp; Sustainability</a>
+  <a href="#platforms">9. Platform Options &amp; Migration Paths</a>
+  <a href="#recommendations">10. Recommendations &amp; Next Steps</a>
+</div>
+
+<!-- ===== SECTION 1 ===== -->
+<h2 id="context"><span class="num">1</span> System Context &amp; Goals</h2>
+
+<p>CKLATracker is the assessment tracking system for <strong>Core Knowledge Language Arts (CKLA)</strong> at Christel House Indianapolis. It currently records per-student, per-question scores across unit assessments for Kindergarten and Grade 1, with Grade 2 planned, and aggregates those scores into summaries, trend charts, and roster views used by teachers and administrators.</p>
+
+<div class="stat-grid">
+  <div class="stat"><div class="big">2</div><div class="label">Grade levels (K–1; Grade 2 planned)</div></div>
+  <div class="stat"><div class="big">30</div><div class="label">Unit assessment tabs</div></div>
+  <div class="stat"><div class="big">105+</div><div class="label">Students per grade</div></div>
+  <div class="stat"><div class="big">132</div><div class="label">Max columns per tab</div></div>
+</div>
+
+<div class="card blue">
+  <h3>Project Goals</h3>
+  <ul>
+    <li>Reduce cognitive load and manual navigation for day-to-day score entry</li>
+    <li>Add input validation to eliminate out-of-range and misplaced entries</li>
+    <li>Provide at-a-glance visual feedback (heat maps, sparklines) for teachers and admins</li>
+    <li>Build longitudinal analytics: student progress across all units, skill drill-downs, action summaries</li>
+    <li>Preserve backward compatibility — all existing formulas (AVERAGEIFS, COUNTIFS, quintile buckets) continue to work</li>
+    <li>Lay groundwork for future migration to a dedicated application if needed</li>
+  </ul>
+</div>
+
+<!-- ===== SECTION 2 ===== -->
+<h2 id="audit"><span class="num">2</span> Current Workflow Audit</h2>
+
+<p>The current system is a pair of Google Sheets workbooks (one per grade, with Grade 2 planned). Each workbook contains <strong>unit tabs</strong> (one per CKLA assessment unit), <strong>Roster View</strong> tabs (aggregated percentages per student per unit), and <strong>Summary Charts</strong> tabs (visual trend data).</p>
+
+<h3>Teacher Data-Entry Workflow (Manual — Current State)</h3>
+
+<div class="card amber">
+  <ol>
+    <li><strong>Open the workbook</strong> — Select the correct Google Sheet for the grade level</li>
+    <li><strong>Find the correct unit tab</strong> — Scroll through 10+ tabs to locate the unit being assessed (e.g., "K U8")</li>
+    <li><strong>Find the student row</strong> — Scroll vertically through 105+ student rows to locate the correct student</li>
+    <li><strong>Find the correct column</strong> — Scroll horizontally past metadata columns (A–I), then through up to 132 question columns to find the right one</li>
+    <li><strong>Enter a score</strong> — Type <code>0</code> or <code>1</code> (or a point value) in the cell</li>
+    <li><strong>Repeat</strong> — Move to the next question column and repeat; then move to the next student row and start over</li>
+  </ol>
+  <p style="margin-top: .5rem;"><strong>Estimated time per student:</strong> 2–5 minutes (depending on unit size). <strong>Per class of 25:</strong> 50–125 minutes.</p>
+</div>
+
+<h3>Admin / Reporting Workflow (Current State)</h3>
+
+<div class="card blue">
+  <ul>
+    <li><strong>Roster View:</strong> Navigate to the Roster View tab to see aggregated percentages; no color-coding or heat map is applied</li>
+    <li><strong>Summary Charts:</strong> Open Summary Charts tab; Trend column exists but many cells are empty (no SPARKLINE formulas present)</li>
+    <li><strong>Data export:</strong> Manual copy-paste into external tools if cross-grade or historical analysis is needed</li>
+    <li><strong>Formula integrity:</strong> No cell protection — teachers can accidentally overwrite AVERAGEIFS, COUNTIFS, or quintile formulas</li>
+  </ul>
+</div>
+
+<!-- ===== SECTION 3 ===== -->
+<h2 id="pain"><span class="num">3</span> Pain Points &amp; Friction Analysis</h2>
+
+<p>The following pain points were identified through direct observation, stakeholder interviews, and workbook audit. They are grouped by severity and frequency.</p>
+
+<table>
+  <tr>
+    <th>Pain Point</th>
+    <th>Severity</th>
+    <th>Frequency</th>
+    <th>Affected Users</th>
+  </tr>
+  <tr>
+    <td><strong>Tab navigation overload</strong> — 46+ tabs in a single workbook; no grouping or color-coding</td>
+    <td>High</td>
+    <td>Every session</td>
+    <td>Teachers, Admins</td>
+  </tr>
+  <tr>
+    <td><strong>Row/column hunting</strong> — Scrolling through 105 rows × 132 columns with no visual anchoring</td>
+    <td>High</td>
+    <td>Every entry</td>
+    <td>Teachers</td>
+  </tr>
+  <tr>
+    <td><strong>Blind data entry</strong> — No confirmation that the correct cell is targeted; 0/1 values in tiny cells</td>
+    <td>High</td>
+    <td>Every entry</td>
+    <td>Teachers</td>
+  </tr>
+  <tr>
+    <td><strong>No input validation</strong> — Accepts any value (text, negative numbers, values exceeding max points)</td>
+    <td>Medium</td>
+    <td>Frequent</td>
+    <td>Teachers</td>
+  </tr>
+  <tr>
+    <td><strong>Formula cells unprotected</strong> — Teachers can accidentally overwrite AVERAGEIFS and quintile formulas</td>
+    <td>High</td>
+    <td>Occasional</td>
+    <td>Admins (fix), Teachers (cause)</td>
+  </tr>
+  <tr>
+    <td><strong>No visual status indicators</strong> — Roster Views lack heat map formatting; mastery status requires mental calculation</td>
+    <td>Medium</td>
+    <td>Every review</td>
+    <td>Teachers, Admins</td>
+  </tr>
+  <tr>
+    <td><strong>Empty Trend columns</strong> — Summary Charts have a Trend column but no SPARKLINE formulas are present</td>
+    <td>Low</td>
+    <td>Every review</td>
+    <td>Admins</td>
+  </tr>
+  <tr>
+    <td><strong>No audit trail</strong> — No record of who entered or changed a score, or when</td>
+    <td>Medium</td>
+    <td>Ongoing</td>
+    <td>Admins</td>
+  </tr>
+  <tr>
+    <td><strong>No bulk import</strong> — Paper-based assessments must be manually typed one cell at a time</td>
+    <td>Medium</td>
+    <td>After paper tests</td>
+    <td>Teachers</td>
+  </tr>
+  <tr>
+    <td><strong>No longitudinal view</strong> — No easy way to see a single student's progress across all units</td>
+    <td>Medium</td>
+    <td>Reporting periods</td>
+    <td>Teachers, Admins</td>
+  </tr>
+</table>
+
+<div class="callout warning">
+  <strong>Key insight:</strong> The highest-friction pain points (tab navigation, row/column hunting, blind entry) are experienced <em>every single time</em> a teacher enters scores. Even small improvements here have an outsized impact on daily workflow.
+</div>
+
+<!-- ===== SECTION 4 ===== -->
+<h2 id="architecture"><span class="num">4</span> Workbook Architecture</h2>
+
+<p>Each grade-level workbook follows a consistent structure. Understanding this layout is critical for both the quick-win improvements and the Apps Script automation layer.</p>
+
+<h3>Tab Structure</h3>
+<table>
+  <tr>
+    <th>Tab Type</th>
+    <th>Examples</th>
+    <th>Purpose</th>
+  </tr>
+  <tr>
+    <td><strong>Unit Assessment</strong></td>
+    <td>K U1, K U2, … K U10; Gr1 U1, … Gr1 U10</td>
+    <td>Per-student, per-question score entry. Columns A–I are metadata; J onward are question scores</td>
+  </tr>
+  <tr>
+    <td><strong>Roster View</strong></td>
+    <td>Roster View K, Roster View Gr1</td>
+    <td>Aggregated percentage per student per unit; formula-driven (AVERAGEIFS, COUNTIFS)</td>
+  </tr>
+  <tr>
+    <td><strong>Summary Charts</strong></td>
+    <td>Summary Charts K, Summary Charts Gr1</td>
+    <td>Visual trend data; includes a Trend column (intended for SPARKLINE formulas)</td>
+  </tr>
+  <tr>
+    <td><strong>Meta Data</strong></td>
+    <td>Meta Data</td>
+    <td>Student rosters, teacher assignments, grade mappings</td>
+  </tr>
+</table>
+
+<h3>Unit Tab Layout (Fixed Row Structure)</h3>
+<table>
+  <tr>
+    <th>Row</th>
+    <th>Content</th>
+  </tr>
+  <tr>
+    <td>Row 2</td>
+    <td>Max points per question (used for validation)</td>
+  </tr>
+  <tr>
+    <td>Row 14</td>
+    <td>Section headers (e.g., "Comprehension", "Vocabulary", "Writing")</td>
+  </tr>
+  <tr>
+    <td>Row 15</td>
+    <td>Question labels (e.g., "Q1", "Q2", … or descriptive names)</td>
+  </tr>
+  <tr>
+    <td>Row 16+</td>
+    <td>Student data rows (one row per student)</td>
+  </tr>
+</table>
+
+<div class="callout info">
+  <strong>Backward compatibility:</strong> All improvements are designed to write to the same cells that teachers currently edit manually. Existing AVERAGEIFS, COUNTIFS, quintile formulas, and Summary Charts continue to auto-recalculate with no structural changes.
+</div>
+
+<!-- ===== SECTION 5 ===== -->
+<h2 id="phase1"><span class="num">5</span> Phase 1 — Quick Wins</h2>
+
+<p><span class="phase-badge p1">Phase 1</span> These improvements can be applied to the existing workbooks immediately, with no structural rebuild. Estimated effort: <strong>1–2 days</strong>.</p>
+
+<div class="card green">
+  <h3>1. Hide Backend Tabs</h3>
+  <p>Collapse unit assessment tabs behind grade-level groups. Expose only the navigation hub, Roster Views, and Summary Charts to teachers. This reduces the visible tab count from 46+ to under 10.</p>
+</div>
+
+<div class="card green">
+  <h3>2. Color-Code Tabs</h3>
+  <p>Apply a consistent color scheme: <strong>blue</strong> for meta/setup tabs, <strong>green</strong> for Kindergarten, <strong>orange</strong> for Grade 1, <strong>purple</strong> for Grade 2. Teachers can instantly identify which grade they're in.</p>
+</div>
+
+<div class="card green">
+  <h3>3. Heat Map Conditional Formatting</h3>
+  <p>Apply green/yellow/red conditional formatting to Roster View percentage columns. Green ≥ 80%, yellow 60–79%, red &lt; 60%. Gives teachers an instant visual read on mastery status without mental calculation.</p>
+  <p><em>Implementation:</em> Use <code>HeatMapFormatter.gs</code> from the CKLA Tools → Phase 1 Tools menu.</p>
+</div>
+
+<div class="card green">
+  <h3>4. Protect Formula Cells</h3>
+  <p>Lock the AVERAGEIFS, COUNTIFS, and quintile formula columns so only the score-entry columns (J onward) are editable by teachers. Prevents accidental formula overwrites.</p>
+</div>
+
+<div class="card green">
+  <h3>5. Data Validation</h3>
+  <p>Restrict score-entry cells to numeric values within the valid range (0 to the max points for each question, as defined in Row 2). Rejects text, negative numbers, and out-of-range values at the cell level.</p>
+</div>
+
+<div class="card green">
+  <h3>6. SPARKLINE Trend Formulas</h3>
+  <p>Fill the empty Trend column on Summary Charts tabs with <code>=SPARKLINE()</code> formulas showing each student's unit-by-unit percentage trend.</p>
+  <p><em>Implementation:</em> Use <code>SparklineTrend.gs</code> from the CKLA Tools → Phase 1 Tools menu.</p>
+</div>
+
+<div class="card green">
+  <h3>7. Checkbox Conversion</h3>
+  <p>Convert 0/1 binary skill columns in unit tabs to Google Sheets checkboxes for faster, less error-prone entry. Checked = 1, unchecked = 0; formulas continue to work with boolean values.</p>
+</div>
+
+<!-- ===== SECTION 6 ===== -->
+<h2 id="phase2"><span class="num">6</span> Phase 2 — Input Overhaul</h2>
+
+<p><span class="phase-badge p2">Phase 2</span> Deploy the Google Apps Script system for sidebar-based score entry and automation. Estimated effort: <strong>1–2 weeks</strong>. See <a href="CKLA_Apps_Script_System.html">CKLA_Apps_Script_System.html</a> for full implementation details and code.</p>
+
+<div class="card blue">
+  <h3>Sidebar Score Entry Form</h3>
+  <p>A sidebar form served by Google Apps Script's HtmlService. Teachers select Grade → Unit → Teacher → Student from cascading dropdowns. The form dynamically reads the unit tab's structure (sections from Row 14, questions from Row 15, max points from Row 2) and presents labeled input fields grouped by assessment section, with live validation.</p>
+  <ul>
+    <li>Auto-fills existing scores when editing</li>
+    <li>Auto-advances to the next student after submission</li>
+    <li>Estimated entry time: ~30 seconds per student (vs. 2–5 minutes manual)</li>
+  </ul>
+</div>
+
+<div class="card blue">
+  <h3>Per-Teacher Input Sheets</h3>
+  <p>Optional lightweight per-teacher input sheets that sync to the master workbook. Reduces the chance of edit conflicts when multiple teachers enter scores simultaneously.</p>
+</div>
+
+<div class="card blue">
+  <h3>Navigation Hub</h3>
+  <p>A dedicated hub tab with hyperlinks to all unit tabs, Roster Views, and Summary Charts. Replaces manual tab scrolling with one-click navigation.</p>
+</div>
+
+<div class="card blue">
+  <h3>Standardized Unit Templates</h3>
+  <p>Template tabs with pre-configured row structure, header rows, formula columns, and data validation. New units can be cloned from the template to ensure consistency.</p>
+</div>
+
+<div class="card blue">
+  <h3>CSV Import &amp; Backup</h3>
+  <p>Bulk CSV import for paper-based assessment data. Timestamped backup utility creates full copies of grade-level data sheets. Export utility generates CSV files for external analysis.</p>
+</div>
+
+<!-- ===== SECTION 7 ===== -->
+<h2 id="phase3"><span class="num">7</span> Phase 3 — Reporting &amp; Dashboards</h2>
+
+<p><span class="phase-badge p3">Phase 3</span> Built-in reporting layer using Apps Script HTML Service — no external BI tools (Looker Studio, etc.) required. Estimated effort: <strong>2–4 weeks</strong>.</p>
+
+<div class="card purple">
+  <h3>Student Progress Reports</h3>
+  <p>Historical view of a single student's scores across all units for a grade level. Color-coded by mastery threshold: green ≥ 80%, yellow 60–79%, red &lt; 60%. Printable or exportable as PDF.</p>
+</div>
+
+<div class="card purple">
+  <h3>Skill Drill-Down by Section</h3>
+  <p>Break down student performance by assessment section (Comprehension, Vocabulary, Writing, etc.) across units. Identify persistent skill gaps that span multiple assessments.</p>
+</div>
+
+<div class="card purple">
+  <h3>Teacher Action Summaries</h3>
+  <p>Per-teacher reports highlighting students below mastery thresholds, aggregated by class. Designed for data team meetings and intervention planning. Includes count of students at each performance tier.</p>
+</div>
+
+<!-- ===== SECTION 8 ===== -->
+<h2 id="phase4"><span class="num">8</span> Phase 4 — Scale &amp; Sustainability</h2>
+
+<p><span class="phase-badge p4">Phase 4</span> Long-term improvements for performance, governance, and potential platform migration. Timeline: <strong>future / as needed</strong>.</p>
+
+<div class="card amber">
+  <h3>Split Workbooks per Grade</h3>
+  <p>Move each grade level into its own Google Sheets workbook for performance. Large workbooks with 46+ tabs and thousands of formula cells become slow to load and edit. Per-grade splitting also simplifies permissions management.</p>
+</div>
+
+<div class="card amber">
+  <h3>Audit Trail</h3>
+  <p>Log every score submission (who, when, what changed) to a dedicated "Submission Log" sheet. Enables accountability and error tracing without manual recordkeeping.</p>
+</div>
+
+<div class="card amber">
+  <h3>Admin Console</h3>
+  <p>Script-driven admin panel for managing tabs (create, hide, protect), refreshing dashboards, running bulk operations, and managing user permissions — all from a single menu interface.</p>
+</div>
+
+<div class="card amber">
+  <h3>Platform Migration (Evaluate)</h3>
+  <p>If the Google Sheets model becomes unmanageable at scale, evaluate migration to a dedicated application. See <a href="#platforms">Section 9: Platform Options</a> for detailed comparison.</p>
+</div>
+
+<!-- ===== SECTION 9 ===== -->
+<h2 id="platforms"><span class="num">9</span> Platform Options &amp; Migration Paths</h2>
+
+<p>If the spreadsheet-based system reaches its limits (too many students, too many grades, performance issues), the following platforms are viable migration targets. Each is evaluated on ease of migration, feature fit, cost, and maintenance burden.</p>
+
+<table>
+  <tr>
+    <th>Platform</th>
+    <th>Strengths</th>
+    <th>Weaknesses</th>
+    <th>Migration Effort</th>
+  </tr>
+  <tr>
+    <td><strong>Google Sheets + Apps Script</strong> (current)</td>
+    <td>Zero cost; familiar to staff; formulas already built; script layer adds automation</td>
+    <td>Performance degrades at scale; limited UI customization; concurrent editing conflicts</td>
+    <td>N/A (current)</td>
+  </tr>
+  <tr>
+    <td><strong>Google AppSheet</strong></td>
+    <td>No-code app on top of Sheets; mobile-friendly forms; role-based views; built-in dashboards</td>
+    <td>Limited formula support; learning curve for admins; may need Workspace license</td>
+    <td>Low — reads existing Sheets data directly</td>
+  </tr>
+  <tr>
+    <td><strong>Airtable</strong></td>
+    <td>Relational data model; rich field types; views and filters; automations; API access</td>
+    <td>Cost per seat; data migration required; less familiar to staff; formula differences</td>
+    <td>Medium — requires data restructuring</td>
+  </tr>
+  <tr>
+    <td><strong>Custom Web App</strong></td>
+    <td>Full control over UI/UX; relational database; unlimited scalability; tailored reporting</td>
+    <td>Requires development and hosting; ongoing maintenance; highest upfront cost</td>
+    <td>High — full rebuild</td>
+  </tr>
+</table>
+
+<div class="callout info">
+  <strong>Recommendation:</strong> Continue with Google Sheets + Apps Script through Phases 1–3. The current system handles the existing student volume and the script layer addresses the core pain points. Re-evaluate platform migration only if student counts exceed ~300 per grade or if multiple schools adopt the system.
+</div>
+
+<!-- ===== SECTION 10 ===== -->
+<h2 id="recommendations"><span class="num">10</span> Recommendations &amp; Next Steps</h2>
+
+<div class="card green">
+  <h3>Immediate (This Week)</h3>
+  <ul>
+    <li>Apply Phase 1 quick wins: hide tabs, color-code, heat map, protect formulas, data validation</li>
+    <li>Run <code>HeatMapFormatter.gs</code> on all Roster View tabs</li>
+    <li>Run <code>SparklineTrend.gs</code> on all Summary Charts tabs</li>
+  </ul>
+</div>
+
+<div class="card blue">
+  <h3>Short-Term (1–2 Weeks)</h3>
+  <ul>
+    <li>Install the Apps Script system (see <a href="CKLA_Apps_Script_System.html">CKLA_Apps_Script_System.html</a> for installation guide)</li>
+    <li>Train teachers on sidebar-based score entry</li>
+    <li>Set up CSV import workflow for paper-based assessments</li>
+    <li>Create navigation hub tab</li>
+  </ul>
+</div>
+
+<div class="card purple">
+  <h3>Medium-Term (2–4 Weeks)</h3>
+  <ul>
+    <li>Build student progress reports and skill drill-down views</li>
+    <li>Create teacher action summary reports for data team meetings</li>
+    <li>Gather teacher feedback and iterate on the sidebar form UX</li>
+  </ul>
+</div>
+
+<div class="card amber">
+  <h3>Long-Term (Future)</h3>
+  <ul>
+    <li>Add Grade 2 workbook and scripts</li>
+    <li>Split workbooks per grade if performance degrades</li>
+    <li>Implement full audit trail logging</li>
+    <li>Evaluate platform migration if scale demands it</li>
+  </ul>
+</div>
+
+<div class="callout success">
+  <strong>Bottom line:</strong> The phased approach ensures that teachers see immediate improvements (Phase 1 quick wins are deployable today) while building toward a fully automated, analytics-rich system. Every phase preserves backward compatibility with the existing formula infrastructure.
+</div>
+
+<hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
+<p style="text-align: center; color: #999; font-size: .85rem;">Prepared by Christina Kelley &middot; Christel House Indianapolis &middot; March 2026</p>
+
+</body>
+</html>
