@@ -69,7 +69,7 @@ function createTeacherInputSheet(tabName, teacher) {
   // Row 2: Instructions
   inputSheet.getRange(2, 1, 1, 4).merge();
   inputSheet.getRange(2, 1)
-    .setValue('Enter scores below. Click "CKLA Tools → Phase 2 → Sync Input Sheets" when done.')
+    .setValue('Enter scores below. Click "CKLA Tools → Phase 2 Tools → Sync Teacher Input Sheets" when done.')
     .setFontSize(11)
     .setFontColor('#5f6368');
 
@@ -114,33 +114,55 @@ function createTeacherInputSheet(tabName, teacher) {
 
   var dataStartRow = 5; // Row 5 onward: student data
 
-  students.forEach(function(student, idx) {
-    var row = dataStartRow + idx;
-
-    // Student name (read-only — protected later)
-    inputSheet.getRange(row, 1)
-      .setValue(student.name)
-      .setFontColor('#3c4043');
-
-    // Pre-fill existing scores from the master tab
-    columnMapping.forEach(function(cm) {
-      var existingValue = sourceSheet.getRange(student.row, cm.sourceCol).getValue();
-      if (existingValue !== '' && existingValue !== null) {
-        inputSheet.getRange(row, cm.inputCol).setValue(existingValue);
-      }
-
-      // Add data validation (0 to maxPoints)
-      var rule = SpreadsheetApp.newDataValidation()
-        .requireNumberBetween(0, cm.maxPoints)
-        .setAllowInvalid(false)
-        .setHelpText('Enter 0–' + cm.maxPoints)
-        .build();
-      inputSheet.getRange(row, cm.inputCol).setDataValidation(rule);
+  // Batch read: fetch all existing scores from the master tab at once
+  // Read the full score range for all students' rows from the source sheet
+  var studentScores = [];
+  if (columnMapping.length > 0) {
+    students.forEach(function(student) {
+      // Read all columns from FIRST_QUESTION to the last mapped source column in one call
+      var maxSourceCol = Math.max.apply(null, columnMapping.map(function(cm) { return cm.sourceCol; }));
+      var numCols = maxSourceCol - COL.FIRST_QUESTION + 1;
+      var rowData = sourceSheet.getRange(student.row, COL.FIRST_QUESTION, 1, numCols).getValues()[0];
+      var rowScores = {};
+      columnMapping.forEach(function(cm) {
+        rowScores[cm.sourceCol] = rowData[cm.sourceCol - COL.FIRST_QUESTION];
+      });
+      studentScores.push(rowScores);
     });
+  }
 
-    // Alternating row colors
+  // Batch write: student names
+  var nameValues = students.map(function(s) { return [s.name]; });
+  inputSheet.getRange(dataStartRow, 1, students.length, 1).setValues(nameValues);
+  inputSheet.getRange(dataStartRow, 1, students.length, 1).setFontColor('#3c4043');
+
+  // Batch write: pre-fill existing scores
+  var scoreValues = students.map(function(student, idx) {
+    return columnMapping.map(function(cm) {
+      var val = studentScores[idx][cm.sourceCol];
+      return (val !== '' && val !== null) ? val : '';
+    });
+  });
+  if (columnMapping.length > 0) {
+    inputSheet.getRange(dataStartRow, 2, students.length, columnMapping.length)
+      .setValues(scoreValues);
+  }
+
+  // Batch apply: data validation per column (one rule per column for all student rows)
+  columnMapping.forEach(function(cm) {
+    var rule = SpreadsheetApp.newDataValidation()
+      .requireNumberBetween(0, cm.maxPoints)
+      .setAllowInvalid(false)
+      .setHelpText('Enter 0–' + cm.maxPoints)
+      .build();
+    inputSheet.getRange(dataStartRow, cm.inputCol, students.length, 1)
+      .setDataValidation(rule);
+  });
+
+  // Alternating row colors
+  students.forEach(function(student, idx) {
     if (idx % 2 === 1) {
-      inputSheet.getRange(row, 1, 1, colIndex - 1)
+      inputSheet.getRange(dataStartRow + idx, 1, 1, colIndex - 1)
         .setBackground('#f8f9fa');
     }
   });
@@ -164,7 +186,7 @@ function createTeacherInputSheet(tabName, teacher) {
   var protection = inputSheet.getRange(dataStartRow, 1, students.length, 1)
     .protect()
     .setDescription('Student names — do not edit');
-  // Remove all editors except the owner
+  // Show a warning before editing student names (does not restrict editors)
   protection.setWarningOnly(true);
 
   // Freeze header rows
@@ -263,10 +285,16 @@ function syncSingleInputSheet_(ss, inputSheet) {
 
     var written = 0;
 
-    // Read student names and scores from the input sheet
+    // Batch read: all student names and scores from the input sheet at once
+    var numCols = meta.columnMapping.length;
+    var inputNames = inputSheet.getRange(meta.dataStartRow, 1, meta.studentCount, 1).getValues();
+    var inputScores = numCols > 0
+      ? inputSheet.getRange(meta.dataStartRow, 2, meta.studentCount, numCols).getValues()
+      : [];
+
+    // Process each student
     for (var i = 0; i < meta.studentCount; i++) {
-      var row = meta.dataStartRow + i;
-      var studentName = String(inputSheet.getRange(row, 1).getValue()).trim();
+      var studentName = String(inputNames[i][0]).trim();
 
       if (!studentName) continue;
 
@@ -274,9 +302,9 @@ function syncSingleInputSheet_(ss, inputSheet) {
       var sourceRow = findStudentRow(meta.sourceTab, studentName);
       if (sourceRow === -1) continue;
 
-      // Copy each score column
-      meta.columnMapping.forEach(function(cm) {
-        var value = inputSheet.getRange(row, cm.inputCol).getValue();
+      // Write each valid score to the source tab
+      meta.columnMapping.forEach(function(cm, colIdx) {
+        var value = inputScores[i][colIdx];
         if (value !== '' && value !== null) {
           var numVal = Number(value);
           if (!isNaN(numVal) && numVal >= 0 && numVal <= cm.maxPoints) {

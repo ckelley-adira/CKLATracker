@@ -125,8 +125,8 @@ function buildNavigationHub() {
     ['CKLA Tools → Data Tools → Import Scores from CSV', 'Bulk import scores from CSV data', '📥'],
     ['CKLA Tools → Data Tools → Validate All Data', 'Check for out-of-range or invalid scores', '✅'],
     ['CKLA Tools → Data Tools → Backup Data Sheets', 'Create a timestamped backup copy', '💾'],
-    ['CKLA Tools → Phase 2 → Form Manager', 'Create and manage Google Form integrations', '📝'],
-    ['CKLA Tools → Phase 2 → Build Navigation Hub', 'Rebuild this navigation page', '🏠']
+    ['CKLA Tools → Phase 2 Tools → Form Manager', 'Create and manage Google Form integrations', '📝'],
+    ['CKLA Tools → Phase 2 Tools → Build Navigation Hub', 'Rebuild this navigation page', '🏠']
   ];
 
   tools.forEach(function(tool) {

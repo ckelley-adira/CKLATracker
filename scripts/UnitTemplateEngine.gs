@@ -7,9 +7,6 @@
  * ============================================================
  */
 
-// Template tab name prefix
-const TEMPLATE_PREFIX = '_Template: ';
-
 // Default sections for different assessment types
 const DEFAULT_UNIT_SECTIONS = {
   'skills': [
@@ -33,7 +30,7 @@ const DEFAULT_UNIT_SECTIONS = {
  * optionally customizes the section structure.
  */
 function showUnitGeneratorDialog() {
-  var html = '<div style="font-family:Google Sans,sans-serif;padding:16px">' +
+  const html = '<div style="font-family:Google Sans,sans-serif;padding:16px">' +
     '<h3 style="color:#1a73e8;margin-bottom:12px">Generate New Unit Tab</h3>' +
     '<p style="font-size:12px;color:#5f6368;margin-bottom:12px">' +
     'Create a new unit assessment tab from the standard template. ' +
@@ -93,7 +90,7 @@ function showUnitGeneratorDialog() {
     '}).generateUnitTab(grade,unit,type,source)}' +
     '</script></div>';
 
-  var output = HtmlService.createHtmlOutput(html)
+  const output = HtmlService.createHtmlOutput(html)
     .setWidth(420)
     .setHeight(480);
   SpreadsheetApp.getUi().showModalDialog(output, 'Generate Unit Tab');
@@ -110,18 +107,18 @@ function showUnitGeneratorDialog() {
  * @returns {Object} - { success, tabName, message } or { success, error }
  */
 function generateUnitTab(grade, unitNum, assessmentType, sourceTab) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   // Build tab name following existing conventions
-  var tabName = buildTabName_(grade, unitNum);
+  const tabName = buildTabName_(grade, unitNum, assessmentType);
 
   // Check if tab already exists
   if (ss.getSheetByName(tabName)) {
     return { success: false, error: 'Tab already exists: ' + tabName };
   }
 
-  var sections = DEFAULT_UNIT_SECTIONS[assessmentType] || [];
-  var sheet = ss.insertSheet(tabName);
+  const sections = DEFAULT_UNIT_SECTIONS[assessmentType] || [];
+  const sheet = ss.insertSheet(tabName);
 
   // ===================== HEADER ROWS =========================
 
@@ -138,7 +135,7 @@ function generateUnitTab(grade, unitNum, assessmentType, sourceTab) {
     .setFontColor('#5f6368');
 
   // Rows 3–13: Reserved for summary stats (AVERAGEIFS, COUNTIFS, etc.)
-  var summaryLabels = [
+  const summaryLabels = [
     'Class Average', 'Teacher Average', '% at Mastery (≥80%)',
     'Count at Mastery', 'Q1 (Top 20%)', 'Q2', 'Q3', 'Q4', 'Q5 (Bottom 20%)',
     '', ''
@@ -163,7 +160,7 @@ function generateUnitTab(grade, unitNum, assessmentType, sourceTab) {
   // ===================== STUDENT INFO COLUMNS ================
 
   // Columns A–I: Student info headers (Row 15)
-  var infoHeaders = [
+  const infoHeaders = [
     'Student #', 'School', 'Grade', 'Teacher', 'Student ID',
     'Student Name', 'Quintile', '% Correct', 'Total Points'
   ];
@@ -177,9 +174,13 @@ function generateUnitTab(grade, unitNum, assessmentType, sourceTab) {
 
   // ===================== QUESTION COLUMNS ====================
 
-  var currentCol = COL.FIRST_QUESTION; // Column J
+  let currentCol = COL.FIRST_QUESTION; // Column J
+  const questionCols = [];  // Track actual question column letters (exclude Totals)
+  const sectionTotalCols = []; // Track section total column positions and ranges
 
   sections.forEach(function(section) {
+    const sectionStartCol = currentCol;
+
     // Row 14: Section header
     if (section.questions > 0) {
       sheet.getRange(14, currentCol)
@@ -194,7 +195,7 @@ function generateUnitTab(grade, unitNum, assessmentType, sourceTab) {
       }
     }
 
-    for (var q = 1; q <= section.questions; q++) {
+    for (let q = 1; q <= section.questions; q++) {
       // Row 15: Question name
       sheet.getRange(15, currentCol)
         .setValue(section.name.replace(/Part \d+: /, '') + ' Q' + q)
@@ -208,7 +209,7 @@ function generateUnitTab(grade, unitNum, assessmentType, sourceTab) {
         .setFontWeight('bold');
 
       // Data validation for score entry cells (Rows 16–365)
-      var rule = SpreadsheetApp.newDataValidation()
+      const rule = SpreadsheetApp.newDataValidation()
         .requireNumberBetween(0, section.maxPoints)
         .setAllowInvalid(false)
         .setHelpText('Enter 0–' + section.maxPoints)
@@ -216,45 +217,83 @@ function generateUnitTab(grade, unitNum, assessmentType, sourceTab) {
       sheet.getRange(ROW.DATA_START, currentCol, ROW.DATA_END - ROW.DATA_START + 1, 1)
         .setDataValidation(rule);
 
+      questionCols.push(currentCol);
       currentCol++;
     }
 
     // Total column for this section
-    sheet.getRange(14, currentCol)
-      .setValue('');
-    sheet.getRange(15, currentCol)
-      .setValue('Total')
-      .setFontWeight('bold')
-      .setHorizontalAlignment('center')
-      .setBackground('#fff2cc');
-    sheet.getRange(2, currentCol)
-      .setValue(section.questions * section.maxPoints)
-      .setHorizontalAlignment('center');
-    currentCol++;
+    if (section.questions > 0) {
+      const sectionEndCol = currentCol - 1;
+      sheet.getRange(14, currentCol)
+        .setValue('');
+      sheet.getRange(15, currentCol)
+        .setValue('Total')
+        .setFontWeight('bold')
+        .setHorizontalAlignment('center')
+        .setBackground('#fff2cc');
+      // Leave Points Possible blank for section total columns to avoid double-counting in % Correct
+      sheet.getRange(2, currentCol)
+        .setValue('')
+        .setHorizontalAlignment('center');
+
+      sectionTotalCols.push({
+        totalCol: currentCol,
+        startCol: sectionStartCol,
+        endCol: sectionEndCol
+      });
+
+      currentCol++;
+    }
   });
 
   // ===================== FORMULA COLUMNS (G, H, I) ===========
 
-  // For each potential student row, add formulas
-  var lastQuestionCol = currentCol - 1;
+  // Only generate formulas if at least one question column exists.
+  // When there are no sections/questions (custom type), skip formula
+  // creation to avoid invalid ranges.
+  if (questionCols.length > 0) {
+    // Build a SUM expression that only includes actual question columns
+    // (excluding section Total columns) by creating disjoint ranges per section
+    const questionRangeLetters = questionCols.map(function(c) {
+      return columnToLetter_(c);
+    });
 
-  for (var r = ROW.DATA_START; r <= ROW.DATA_END; r++) {
-    // Column I (Total Points): SUM of all score columns
-    var lastColLetter = columnToLetter_(lastQuestionCol);
-    sheet.getRange(r, COL.TOTAL_PTS)
-      .setFormula('=IF(F' + r + '="","",SUM(J' + r + ':' +
-                  lastColLetter + r + '))');
+    for (let r = ROW.DATA_START; r <= ROW.DATA_END; r++) {
+      // Section total formulas: SUM of question columns within each section
+      sectionTotalCols.forEach(function(st) {
+        const startLetter = columnToLetter_(st.startCol);
+        const endLetter = columnToLetter_(st.endCol);
+        sheet.getRange(r, st.totalCol)
+          .setFormula('=IF(F' + r + '="","",SUM(' +
+                      startLetter + r + ':' + endLetter + r + '))');
+      });
 
-    // Column H (% Correct): Total / Max possible
-    sheet.getRange(r, COL.PCT_CORRECT)
-      .setFormula('=IF(I' + r + '="","",I' + r + '/SUM($J$2:$' +
-                  lastColLetter + '$2))');
+      // Column I (Total Points): SUM of only question columns (excludes Total columns)
+      const sumParts = questionRangeLetters.map(function(letter) {
+        return letter + r;
+      }).join(',');
+      sheet.getRange(r, COL.TOTAL_PTS)
+        .setFormula('=IF(F' + r + '="","",SUM(' + sumParts + '))');
+
+      // Column H (% Correct): Total / Max possible (only question columns in row 2)
+      const maxParts = questionRangeLetters.map(function(letter) {
+        return letter + '$2';
+      }).join(',');
+      sheet.getRange(r, COL.PCT_CORRECT)
+        .setFormula('=IF(I' + r + '="","",I' + r + '/SUM(' + maxParts + '))');
+
+      // Column G (Quintile): uses the % Correct value to assign a 1–5 quintile
+      sheet.getRange(r, COL.QUINTILE)
+        .setFormula('=IF(H' + r + '="","",IF(H' + r + '>=0.8,"Q1",' +
+                    'IF(H' + r + '>=0.6,"Q2",IF(H' + r + '>=0.4,"Q3",' +
+                    'IF(H' + r + '>=0.2,"Q4","Q5")))))');
+    }
   }
 
   // ===================== COPY STUDENT ROSTER ==================
 
   if (sourceTab && sourceTab !== '') {
-    var result = copyStudentRoster_(ss, sourceTab, tabName);
+    const result = copyStudentRoster_(ss, sourceTab, tabName);
     if (!result.success) {
       // Non-fatal: tab was created, just no roster
       console.log('Roster copy warning: ' + result.error);
@@ -272,7 +311,7 @@ function generateUnitTab(grade, unitNum, assessmentType, sourceTab) {
   sheet.setColumnWidth(COL.TEACHER, 140);
 
   // Tab color based on grade
-  var tabColors = { 'K': '#34a853', '1': '#ea8600', '2': '#9334e6' };
+  const tabColors = { 'K': '#34a853', '1': '#ea8600', '2': '#9334e6' };
   sheet.setTabColor(tabColors[grade] || '#5f6368');
 
   return {
@@ -289,11 +328,28 @@ function generateUnitTab(grade, unitNum, assessmentType, sourceTab) {
 
 /**
  * Build a tab name following the existing naming convention.
- * K → "K U1 Skills", Grade 1 → "Gr1 U1 Skills", Grade 2 → "Gr2 U1 Skills"
+ * K → "K U1 Skills", Grade 1 → "Gr1 U1 Knowledge", etc.
+ *
+ * @param {string} grade - 'K', '1', or '2'
+ * @param {number} unitNum - Unit number
+ * @param {string} assessmentType - 'skills', 'knowledge', or 'custom'
  */
-function buildTabName_(grade, unitNum) {
-  var prefix = grade === 'K' ? 'K U' : 'Gr' + grade + ' U';
-  return prefix + unitNum + ' Skills';
+function buildTabName_(grade, unitNum, assessmentType) {
+  const prefix = grade === 'K' ? 'K U' : 'Gr' + grade + ' U';
+  let suffix;
+  switch (assessmentType) {
+    case 'knowledge':
+      suffix = 'Knowledge';
+      break;
+    case 'custom':
+      suffix = 'Custom';
+      break;
+    case 'skills':
+    default:
+      suffix = 'Skills';
+      break;
+  }
+  return prefix + unitNum + ' ' + suffix;
 }
 
 
@@ -301,11 +357,12 @@ function buildTabName_(grade, unitNum) {
  * Convert a 1-based column number to a letter (1→A, 26→Z, 27→AA).
  */
 function columnToLetter_(col) {
-  var letter = '';
-  while (col > 0) {
-    var mod = (col - 1) % 26;
+  let letter = '';
+  let c = col;
+  while (c > 0) {
+    const mod = (c - 1) % 26;
     letter = String.fromCharCode(65 + mod) + letter;
-    col = Math.floor((col - 1) / 26);
+    c = Math.floor((c - 1) / 26);
   }
   return letter;
 }
@@ -316,22 +373,22 @@ function columnToLetter_(col) {
  * destination tab, starting at ROW.DATA_START.
  */
 function copyStudentRoster_(ss, sourceTabName, destTabName) {
-  var sourceSheet = ss.getSheetByName(sourceTabName);
-  var destSheet = ss.getSheetByName(destTabName);
+  const sourceSheet = ss.getSheetByName(sourceTabName);
+  const destSheet = ss.getSheetByName(destTabName);
 
   if (!sourceSheet || !destSheet) {
     return { success: false, error: 'Sheet not found' };
   }
 
-  var lastRow = sourceSheet.getLastRow();
+  const lastRow = sourceSheet.getLastRow();
   if (lastRow < ROW.DATA_START) {
     return { success: false, error: 'No student data in source tab' };
   }
 
-  var numRows = lastRow - ROW.DATA_START + 1;
+  const numRows = lastRow - ROW.DATA_START + 1;
 
   // Copy columns A–F (student info)
-  var data = sourceSheet.getRange(
+  const data = sourceSheet.getRange(
     ROW.DATA_START, 1, numRows, COL.STUDENT_NAME
   ).getValues();
 

@@ -173,7 +173,10 @@ function onFormSubmit(e) {
     // Write scores using the existing submitScores function
     var result = submitScores(tabName, studentName, scores);
 
-    if (!result.success) {
+    if (result.success) {
+      // Log teacher info for audit trail
+      logFormSubmission_(tabName, studentName, teacher, Object.keys(scores).length);
+    } else {
       logFormError_(tabName, 'Submit failed for ' + studentName + ': ' + result.error);
     }
 
@@ -339,6 +342,32 @@ function logFormError_(tabName, errorMsg) {
       tabName,
       errorMsg,
       0
+    ]);
+  } catch (e) {
+    console.log('Log error: ' + e.message);
+  }
+}
+
+
+/**
+ * Log a successful form submission to the Submission Log sheet.
+ * @param {string} tabName
+ * @param {string} studentName
+ * @param {string} teacher
+ * @param {number} scoreCount
+ */
+function logFormSubmission_(tabName, studentName, teacher, scoreCount) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var logSheet = ss.getSheetByName('Submission Log');
+    if (!logSheet) return;
+
+    logSheet.appendRow([
+      new Date(),
+      teacher || 'FORM',
+      tabName,
+      studentName,
+      scoreCount
     ]);
   } catch (e) {
     console.log('Log error: ' + e.message);
