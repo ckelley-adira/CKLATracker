@@ -61,7 +61,7 @@ function createAssessmentForm(tabName) {
     section.questions.forEach(function(q) {
       var item = form.addTextItem();
       item.setTitle(q.name)
-        .setHelpText('Max points: ' + q.maxPoints + ' | Column: ' + q.col);
+        .setHelpText('Max points: ' + q.maxPoints);
 
       // Add numeric validation
       var validation = FormApp.createTextValidation()
@@ -158,6 +158,9 @@ function onFormSubmit(e) {
         var numVal = Number(value);
         if (!isNaN(numVal) && numVal >= 0 && numVal <= q.maxPoints) {
           scores[q.col] = numVal;
+        } else {
+          logFormError_(tabName, 'Invalid score for ' + title + ': ' + value +
+            ' (expected 0–' + q.maxPoints + ') for student ' + studentName);
         }
       }
     });

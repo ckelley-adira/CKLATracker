@@ -95,7 +95,7 @@ All Phase 2 tools are under **CKLA Tools → Phase 2 Tools**:
 
 ## Need Help?
 
-- Check the [Navigation Hub](#) (first tab) for quick links
+- Check the [Navigation Hub](# "First tab in your workbook") (first tab) for quick links
 - See the [Apps Script System Guide](../CKLA_Apps_Script_System.html) for technical details
 - Open an issue on GitHub for bugs or feature requests
 

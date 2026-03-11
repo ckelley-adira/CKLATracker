@@ -240,15 +240,15 @@ function generateUnitTab(grade, unitNum, assessmentType, sourceTab) {
 
   for (var r = ROW.DATA_START; r <= ROW.DATA_END; r++) {
     // Column I (Total Points): SUM of all score columns
+    var lastColLetter = columnToLetter_(lastQuestionCol);
     sheet.getRange(r, COL.TOTAL_PTS)
-      .setFormula('=IF(F' + r + '="","",SUMPRODUCT((ROW(J' + r + ':' +
-                  columnToLetter_(lastQuestionCol) + r + ')>0)*' +
-                  '(J' + r + ':' + columnToLetter_(lastQuestionCol) + r + ')))');
+      .setFormula('=IF(F' + r + '="","",SUM(J' + r + ':' +
+                  lastColLetter + r + '))');
 
     // Column H (% Correct): Total / Max possible
     sheet.getRange(r, COL.PCT_CORRECT)
       .setFormula('=IF(I' + r + '="","",I' + r + '/SUM($J$2:$' +
-                  columnToLetter_(lastQuestionCol) + '$2))');
+                  lastColLetter + '$2))');
   }
 
   // ===================== COPY STUDENT ROSTER ==================
