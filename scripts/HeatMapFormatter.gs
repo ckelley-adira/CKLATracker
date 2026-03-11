@@ -90,9 +90,13 @@ function applyHeatMapToSheet_(sheet, startRow, startCol, endCol) {
   // Clear existing conditional format rules on this sheet
   sheet.clearConditionalFormatRules();
 
+  // Rules are evaluated in order; the first matching rule wins.
+  // Green: >= 0.80 (or 80)
+  // Yellow: >= 0.60 (or 60) — only reached if green didn't match
+  // Red: < 0.60 (or 60) — only reached if neither green nor yellow matched
   const rules = [];
 
-  // Green rule: value >= 0.80 (or 80)
+  // Rule 1 (Green): value >= greenMin
   rules.push(
     SpreadsheetApp.newConditionalFormatRule()
       .whenNumberGreaterThanOrEqualTo(greenMin)
@@ -102,17 +106,17 @@ function applyHeatMapToSheet_(sheet, startRow, startCol, endCol) {
       .build()
   );
 
-  // Yellow rule: value >= 0.60 (or 60) AND < 0.80 (or 80)
+  // Rule 2 (Yellow): value >= yellowMin (values >= greenMin already matched rule 1)
   rules.push(
     SpreadsheetApp.newConditionalFormatRule()
-      .whenNumberBetween(yellowMin, greenMin - (usePercent100 ? 1 : 0.001))
+      .whenNumberGreaterThanOrEqualTo(yellowMin)
       .setBackground(HEAT_MAP.YELLOW.bg)
       .setFontColor(HEAT_MAP.YELLOW.fg)
       .setRanges([range])
       .build()
   );
 
-  // Red rule: value < 0.60 (or 60) — applies to any positive value below yellow
+  // Rule 3 (Red): value < yellowMin
   rules.push(
     SpreadsheetApp.newConditionalFormatRule()
       .whenNumberLessThan(yellowMin)

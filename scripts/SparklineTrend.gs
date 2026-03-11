@@ -14,8 +14,9 @@ const SUMMARY_CHART_TABS = [
   '7. Gr2 Summary Charts'
 ];
 
-// Sparkline chart options
-const SPARKLINE_OPTIONS = '{"charttype","line"},{"color","#1a73e8"},{"linewidth",2}';
+// Sparkline chart options (Google Sheets array literal: commas separate columns,
+// semicolons separate rows of the options matrix)
+const SPARKLINE_OPTIONS = '"charttype","line";"color","#1a73e8";"linewidth",2';
 
 // First data row on Summary Charts tabs (rows 1–N are headers)
 const SUMMARY_DATA_START_ROW = 2;
@@ -79,7 +80,6 @@ function addSparklinesToSheet_(sheet) {
   if (scoreEndCol < scoreStartCol) return 0;
 
   let sparklinesAdded = 0;
-  const numRows = lastRow - SUMMARY_DATA_START_ROW + 1;
 
   for (let r = SUMMARY_DATA_START_ROW; r <= lastRow; r++) {
     const cell = sheet.getRange(r, trendCol);
