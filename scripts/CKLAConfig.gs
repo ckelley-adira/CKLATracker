@@ -9,7 +9,7 @@
 
 // ======================== CONSTANTS ==========================
 
-const CKLA_VERSION = '1.0';
+const CKLA_VERSION = '2.0';
 
 // Row positions in every unit tab (fixed layout)
 const ROW = {
@@ -84,6 +84,16 @@ function onOpen() {
     .addSubMenu(ui.createMenu('Phase 1 Tools')
       .addItem('Apply Heat Map to Roster Views', 'applyHeatMapToAllRosterViews')
       .addItem('Add Sparkline Trends to Summary Charts', 'addSparklineTrendsToAllSummaryCharts')
+    )
+    .addSubMenu(ui.createMenu('Phase 2 Tools')
+      .addItem('Build Navigation Hub', 'buildNavigationHub')
+      .addItem('Form Manager (Create/Link Forms)', 'showFormManagerDialog')
+      .addSeparator()
+      .addItem('Create Teacher Input Sheet', 'showCreateTeacherSheetDialog')
+      .addItem('Sync Teacher Input Sheets', 'syncAllTeacherInputSheets')
+      .addItem('Clean Up Input Sheets', 'cleanupTeacherInputSheets')
+      .addSeparator()
+      .addItem('Generate New Unit Tab', 'showUnitGeneratorDialog')
     )
     .addSeparator()
     .addItem('About CKLA Tools v' + CKLA_VERSION, 'showAbout')
