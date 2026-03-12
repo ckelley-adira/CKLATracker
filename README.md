@@ -34,8 +34,13 @@ This tracker addresses the pain points of high-volume manual data entry, cogniti
 | `scripts/SkillDrillDown.gs` | **Phase 3:** Skill-level drill-down dashboards by assessment section |
 | `scripts/TeacherActionReport.gs` | **Phase 3:** Teacher Action Report with class summary, flagged students, skill gaps, action items |
 | `scripts/CohortComparison.gs` | **Phase 3:** Cohort comparison charts by demographic groups with trend analysis |
+| `scripts/AuditTrail.gs` | **Phase 4:** Audit trail logging — tracks cell edits with timestamp, user, cell, old/new values |
+| `scripts/WorkbookSplitter.gs` | **Phase 4:** Per-grade workbook splitting with IMPORTRANGE cross-grade link setup |
+| `scripts/AdminConsole.gs` | **Phase 4:** Admin console for partner/school/year setup, sheet protection, bulk operations |
+| `scripts/AdminConsoleUI.html` | **Phase 4:** Admin console sidebar interface |
 | `docs/phase2_onboarding.md` | **Phase 2:** Onboarding guide for teachers on new input workflows |
 | `docs/phase3_reporting.md` | **Phase 3:** Reporting guide for dashboards and report features |
+| `docs/phase4_admin.md` | **Phase 4:** Admin guide for audit trail, workbook splitting, and admin console |
 
 ---
 
@@ -69,6 +74,15 @@ The five core script files provide a complete input and reporting layer on top o
 | `TeacherActionReport.gs` | `showTeacherActionReportDialog()`, `getTeacherActionReportData()`, `generateActionItems_()` |
 | `CohortComparison.gs` | `showCohortComparisonDialog()`, `getCohortComparisonData()`, `getDemographicFields()` |
 
+### Phase 4 Scripts
+
+| Script | Key Functions |
+|---|---|
+| `AuditTrail.gs` | `onEditAudit()`, `initAuditTrail()`, `showAuditLogDialog()`, `getAuditLogEntries()`, `clearAuditLog()` |
+| `WorkbookSplitter.gs` | `showWorkbookSplitDialog()`, `splitWorkbookForGrade()`, `configureImportRangeLinks()`, `getSplitPreview()` |
+| `AdminConsole.gs` | `showAdminConsole()`, `getSystemStatus()`, `createSchoolYearWorkbook()`, `protectAllSheets()`, `runBulkOperation()` |
+| `AdminConsoleUI.html` | Sidebar UI served by `HtmlService` — tabbed dashboard with status, onboarding, partners, and bulk operations |
+
 The script layer **writes to the same cells** teachers currently edit manually, so all existing AVERAGEIFS, COUNTIFS, quintile formulas, and summary charts continue to auto-recalculate with no structural changes required.
 
 ---
@@ -98,8 +112,8 @@ Deploy the Apps Script system. Sidebar-based score entry form, Google Form integ
 ### Phase 3 — Reporting & Dashboards *(2–4 weeks)*
 Student progress reports (historical view across all units), skill drill-downs by section, teacher action summaries highlighting students below mastery thresholds, and cohort comparison charts. Built with Apps Script HTML Service — no external BI tools required. See [Phase 3 Reporting Guide](docs/phase3_reporting.md) for user-facing documentation.
 
-### Phase 4 — Scale & Sustainability *(future)*
-Split workbooks per grade for performance, add an audit trail for score edits, create an admin console for tab management, and evaluate migration to a web app (AppSheet, Airtable, or custom) if the spreadsheet model becomes unmanageable.
+### Phase 4 — Scale & Sustainability *(current)*
+Admin console with system dashboard, partner school onboarding, and bulk operations. Audit trail logging with installable `onEdit` trigger tracking timestamp, user, sheet, cell, and old/new values. Workbook split manager for creating per-grade workbooks with IMPORTRANGE cross-grade reporting links. See [Phase 4 Admin Guide](docs/phase4_admin.md) for user-facing documentation.
 
 ---
 
@@ -123,10 +137,15 @@ To install the Apps Script files into a Google Sheet:
 14. Repeat for `SkillDrillDown` (paste `scripts/SkillDrillDown.gs`)
 15. Repeat for `TeacherActionReport` (paste `scripts/TeacherActionReport.gs`)
 16. Repeat for `CohortComparison` (paste `scripts/CohortComparison.gs`)
-17. Click **+** → **HTML** → name it `ScoreEntryUI` → paste `scripts/ScoreEntryUI.html`
-18. Click **Save** (Ctrl+S / Cmd+S)
-19. Reload the spreadsheet — a new **CKLA Tools** menu will appear in the menu bar
-20. First run: click **CKLA Tools → Enter Assessment Scores** and authorize when prompted
+17. Repeat for `AuditTrail` (paste `scripts/AuditTrail.gs`)
+18. Repeat for `WorkbookSplitter` (paste `scripts/WorkbookSplitter.gs`)
+19. Repeat for `AdminConsole` (paste `scripts/AdminConsole.gs`)
+20. Click **+** → **HTML** → name it `ScoreEntryUI` → paste `scripts/ScoreEntryUI.html`
+21. Click **+** → **HTML** → name it `AdminConsoleUI` → paste `scripts/AdminConsoleUI.html`
+22. Click **Save** (Ctrl+S / Cmd+S)
+23. Reload the spreadsheet — a new **CKLA Tools** menu will appear in the menu bar
+24. First run: click **CKLA Tools → Enter Assessment Scores** and authorize when prompted
+25. For audit trail: click **CKLA Tools → Phase 4 Admin → Initialize Audit Trail** to set up edit logging
 
 > **Note on authorization:** The first time any function runs, Google will ask you to authorize the script. Click **Advanced → Go to CKLA Skills Tracking (unsafe) → Allow**. This is normal for custom Google Workspace scripts — it needs read/write access to your spreadsheet data.
 

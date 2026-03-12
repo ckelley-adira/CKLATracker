@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    font-family: "Google Sans", Roboto, sans-serif;
+    margin: 0;
+    padding: 14px;
+    font-size: 13px;
+    color: #202124;
+  }
+  h2 {
+    color: #1a73e8;
+    font-size: 18px;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    color: #5f6368;
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    border-bottom: 2px solid #dadce0;
+    margin-bottom: 14px;
+  }
+  .tab {
+    padding: 8px 14px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    color: #5f6368;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .tab.active {
+    color: #1a73e8;
+    border-bottom-color: #1a73e8;
+  }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Status cards */
+  .status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .stat-card {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a73e8;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #5f6368;
+  }
+
+  /* Component status */
+  .component {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #f1f3f4;
+    font-size: 12px;
+  }
+  .badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge.on { background: #e6f4ea; color: #137333; }
+  .badge.off { background: #fce8e6; color: #d93025; }
+
+  /* Form fields */
+  label {
+    display: block;
+    font-size: 12px;
+    color: #5f6368;
+    margin-top: 10px;
+    margin-bottom: 3px;
+  }
+  input, select {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-size: 13px;
+    box-sizing: border-box;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #1a73e8;
+  }
+
+  /* Buttons */
+  button {
+    background: #1a73e8;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 10px;
+    margin-right: 4px;
+  }
+  button:hover { background: #1557b0; }
+  button:disabled { background: #dadce0; cursor: not-allowed; }
+  .btn-secondary { background: #5f6368; }
+  .btn-secondary:hover { background: #3c4043; }
+  .btn-danger { background: #d93025; }
+  .btn-danger:hover { background: #b3261e; }
+  .btn-sm { padding: 4px 10px; font-size: 11px; margin-top: 4px; }
+
+  /* Status messages */
+  .msg {
+    margin-top: 10px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .msg.success { background: #e6f4ea; color: #137333; }
+  .msg.error { background: #fce8e6; color: #d93025; }
+  .msg.info { background: #e8f0fe; color: #1a73e8; }
+
+  /* Operations grid */
+  .ops-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .op-btn {
+    background: #f8f9fa;
+    color: #202124;
+    border: 1px solid #dadce0;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .op-btn:hover { background: #e8f0fe; border-color: #1a73e8; }
+  .op-btn .op-title { font-weight: 600; }
+  .op-btn .op-desc { color: #5f6368; font-size: 11px; }
+
+  /* Partner list */
+  .partner-item {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .partner-info { font-size: 12px; }
+  .partner-info .school { font-weight: 600; }
+  .partner-info .year { color: #5f6368; }
+  .partner-info a { color: #1a73e8; font-size: 11px; }
+  .empty-state { color: #9aa0a6; font-style: italic; text-align: center; padding: 20px; }
+</style>
+</head>
+<body>
+
+<h2>Admin Console</h2>
+<p class="subtitle">System management and partner onboarding</p>
+
+<!-- Tab navigation -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+  <div class="tab" onclick="switchTab('onboard')">Onboard</div>
+  <div class="tab" onclick="switchTab('partners')">Partners</div>
+  <div class="tab" onclick="switchTab('operations')">Operations</div>
+</div>
+
+<!-- Dashboard Panel -->
+<div id="panel-dashboard" class="panel active">
+  <div id="status-grid" class="status-grid">
+    <div class="stat-card"><div class="stat-num" id="s-unit">—</div><div class="stat-label">Unit Tabs</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-total">—</div><div class="stat-label">Total Sheets</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-roster">—</div><div class="stat-label">Roster Views</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-summary">—</div><div class="stat-label">Summary Charts</div></div>
+  </div>
+  <h3 style="font-size:13px;margin:10px 0 6px;">System Components</h3>
+  <div id="components"></div>
+</div>
+
+<!-- Onboard Panel -->
+<div id="panel-onboard" class="panel">
+  <p style="font-size:12px;color:#5f6368;">Create a new CKLA tracking workbook for a partner school.</p>
+  <label>School Name</label>
+  <input id="ob-school" placeholder="e.g., Christel House South">
+  <label>Academic Year</label>
+  <input id="ob-year" placeholder="e.g., FY27" value="FY27">
+  <label>Grades to Include</label>
+  <div style="display:flex;gap:12px;margin-top:4px;">
+    <label style="margin:0;display:flex;align-items:center;gap:4px;">
+      <input type="checkbox" id="ob-gradeK" checked style="width:auto;"> K
+    </label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px;">
+      <input type="checkbox" id="ob-grade1" checked style="width:auto;"> 1
+    </label>
+    <label style="margin:0;display:flex;align-items:center;gap:4px;">
+      <input type="checkbox" id="ob-grade2" style="width:auto;"> 2
+    </label>
+  </div>
+  <label>
+    <input type="checkbox" id="ob-rosters" style="width:auto;margin-top:10px;"> Copy existing student rosters
+  </label>
+  <label>Drive Folder (optional)</label>
+  <input id="ob-folder" placeholder="e.g., CKLA Partner Schools">
+  <button onclick="createWorkbook()">Create Workbook</button>
+  <div id="ob-msg"></div>
+</div>
+
+<!-- Partners Panel -->
+<div id="panel-partners" class="panel">
+  <div id="partner-list"><p class="empty-state">Loading...</p></div>
+  <button class="btn-secondary" onclick="loadPartners()">Refresh</button>
+</div>
+
+<!-- Operations Panel -->
+<div id="panel-operations" class="panel">
+  <div class="ops-grid">
+    <button class="op-btn" onclick="runOp('refresh_dashboards')">
+      <div class="op-title">Refresh All Summaries</div>
+      <div class="op-desc">Recalculate all summary stats across unit tabs</div>
+    </button>
+    <button class="op-btn" onclick="runOp('protect_sheets')">
+      <div class="op-title">Protect Formula Cells</div>
+      <div class="op-desc">Lock header rows and formula columns on all unit tabs</div>
+    </button>
+    <button class="op-btn" onclick="runOp('hide_admin')">
+      <div class="op-title">Hide Admin Sheets</div>
+      <div class="op-desc">Hide Audit Log, Meta Data, and other internal sheets</div>
+    </button>
+    <button class="op-btn" onclick="runOp('show_admin')">
+      <div class="op-title">Show Hidden Sheets</div>
+      <div class="op-desc">Unhide all hidden sheets for admin access</div>
+    </button>
+    <button class="op-btn" onclick="runOp('validate_data')">
+      <div class="op-title">Validate All Data</div>
+      <div class="op-desc">Check for out-of-range scores, non-numeric values, orphaned rows</div>
+    </button>
+    <button class="op-btn" onclick="runOp('init_audit')">
+      <div class="op-title">Initialize Audit Trail</div>
+      <div class="op-desc">Set up the edit-tracking audit log and install trigger</div>
+    </button>
+  </div>
+  <div id="op-msg"></div>
+</div>
+
+<script>
+// ======================== TAB SWITCHING =====================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  // Find the tab by checking text content
+  document.querySelectorAll('.tab').forEach(function(t) {
+    if (t.textContent.toLowerCase().indexOf(name.substring(0,4)) !== -1) t.classList.add('active');
+  });
+  document.getElementById('panel-' + name).classList.add('active');
+
+  if (name === 'partners') loadPartners();
+}
+
+// ======================== DASHBOARD =========================
+function loadDashboard() {
+  google.script.run.withSuccessHandler(renderDashboard).withFailureHandler(function(e) {
+    console.log('Dashboard error: ' + e.message);
+  }).getSystemStatus();
+}
+
+function renderDashboard(status) {
+  document.getElementById('s-unit').textContent = status.unitTabs;
+  document.getElementById('s-total').textContent = status.totalSheets;
+  document.getElementById('s-roster').textContent = status.rosterTabs;
+  document.getElementById('s-summary').textContent = status.summaryTabs;
+
+  var html = '';
+  var comps = [
+    { key: 'metaData', label: 'Meta Data Tab' },
+    { key: 'navigationHub', label: 'Navigation Hub' },
+    { key: 'auditLog', label: 'Audit Log' },
+    { key: 'auditTrigger', label: 'Audit Trigger' },
+    { key: 'submissionLog', label: 'Submission Log' }
+  ];
+  comps.forEach(function(c) {
+    var active = status.components[c.key];
+    html += '<div class="component"><span>' + c.label + '</span>';
+    html += '<span class="badge ' + (active ? 'on' : 'off') + '">' + (active ? 'Active' : 'Not Set Up') + '</span></div>';
+  });
+  document.getElementById('components').innerHTML = html;
+}
+
+// ======================== ONBOARDING ========================
+function createWorkbook() {
+  var school = document.getElementById('ob-school').value.trim();
+  if (!school) { showMsg('ob-msg', 'error', 'Please enter a school name.'); return; }
+
+  var grades = [];
+  if (document.getElementById('ob-gradeK').checked) grades.push('K');
+  if (document.getElementById('ob-grade1').checked) grades.push('1');
+  if (document.getElementById('ob-grade2').checked) grades.push('2');
+
+  if (grades.length === 0) { showMsg('ob-msg', 'error', 'Select at least one grade.'); return; }
+
+  var config = {
+    schoolName: school,
+    year: document.getElementById('ob-year').value.trim() || 'FY27',
+    grades: grades,
+    copyRosters: document.getElementById('ob-rosters').checked,
+    folderName: document.getElementById('ob-folder').value.trim() || null
+  };
+
+  showMsg('ob-msg', 'info', 'Creating workbook... This may take a moment.');
+  google.script.run.withSuccessHandler(function(r) {
+    if (r.success) {
+      showMsg('ob-msg', 'success', r.message + ' <a href="' + r.spreadsheetUrl + '" target="_blank">Open workbook</a>');
+    } else {
+      showMsg('ob-msg', 'error', 'Error: ' + r.error);
+    }
+  }).withFailureHandler(function(e) {
+    showMsg('ob-msg', 'error', e.message);
+  }).createSchoolYearWorkbook(config);
+}
+
+// ======================== PARTNERS ==========================
+function loadPartners() {
+  google.script.run.withSuccessHandler(renderPartners).withFailureHandler(function(e) {
+    document.getElementById('partner-list').innerHTML = '<p class="empty-state">Error loading partners.</p>';
+  }).listPartnerSchools();
+}
+
+function renderPartners(partners) {
+  var container = document.getElementById('partner-list');
+  if (!partners || partners.length === 0) {
+    container.innerHTML = '<p class="empty-state">No partner schools configured yet.<br>Use the Onboard tab to create one.</p>';
+    return;
+  }
+
+  var html = '';
+  partners.forEach(function(p, i) {
+    html += '<div class="partner-item">';
+    html += '<div class="partner-info"><span class="school">' + esc(p.school) + '</span> ';
+    html += '<span class="year">' + esc(p.year) + '</span><br>';
+    if (p.spreadsheetUrl) {
+      html += '<a href="' + p.spreadsheetUrl + '" target="_blank">Open Workbook</a>';
+    }
+    html += '</div>';
+    html += '<button class="btn-danger btn-sm" onclick="removePartner(' + i + ')">Remove</button>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function removePartner(index) {
+  if (!confirm('Remove this partner entry? The workbook will not be deleted.')) return;
+  google.script.run.withSuccessHandler(function(r) {
+    if (r.success) loadPartners();
+  }).removePartnerSchool(index);
+}
+
+// ======================== OPERATIONS ========================
+function runOp(operation) {
+  showMsg('op-msg', 'info', 'Running operation...');
+  google.script.run.withSuccessHandler(function(r) {
+    if (r.success) {
+      showMsg('op-msg', 'success', r.message || 'Operation completed successfully.');
+      loadDashboard(); // Refresh dashboard after operation
+    } else {
+      showMsg('op-msg', 'error', 'Error: ' + (r.error || 'Unknown error'));
+    }
+  }).withFailureHandler(function(e) {
+    showMsg('op-msg', 'error', e.message);
+  }).runBulkOperation(operation);
+}
+
+// ======================== HELPERS ===========================
+function showMsg(id, type, msg) {
+  document.getElementById(id).innerHTML = '<div class="msg ' + type + '">' + msg + '</div>';
+}
+
+function esc(s) {
+  var d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+// ======================== INIT ==============================
+loadDashboard();
+</script>
+
+</body>
+</html>

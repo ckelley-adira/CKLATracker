@@ -9,7 +9,7 @@
 
 // ======================== CONSTANTS ==========================
 
-const CKLA_VERSION = '2.0';
+const CKLA_VERSION = '3.0';
 
 // Row positions in every unit tab (fixed layout)
 const ROW = {
@@ -101,6 +101,16 @@ function onOpen() {
       .addItem('Teacher Action Report', 'showTeacherActionReportDialog')
       .addSeparator()
       .addItem('Cohort Comparison Charts', 'showCohortComparisonDialog')
+    )
+    .addSubMenu(ui.createMenu('Phase 4 Admin')
+      .addItem('Admin Console', 'showAdminConsole')
+      .addSeparator()
+      .addItem('Initialize Audit Trail', 'initAuditTrail')
+      .addItem('View Audit Log', 'showAuditLogDialog')
+      .addItem('Toggle Audit Log Visibility', 'toggleAuditLogVisibility')
+      .addItem('Clear Audit Log', 'clearAuditLog')
+      .addSeparator()
+      .addItem('Workbook Split Manager', 'showWorkbookSplitDialog')
     )
     .addSeparator()
     .addItem('About CKLA Tools v' + CKLA_VERSION, 'showAbout')
