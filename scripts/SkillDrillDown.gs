@@ -240,24 +240,24 @@ function buildSkillDrillDownHTML_() {
     'if(!data.units||data.units.length===0){html="<p>No data found.</p>";' +
     'document.getElementById("ddOutput").innerHTML=html;return;}' +
     'data.units.forEach(function(u){' +
-    'html+="<h4 style=\\'margin:12px 0 4px;color:#333;\\'>"+esc(u.unit)+"</h4>";' +
-    'html+="<table style=\\'width:100%;border-collapse:collapse;font-size:12px;\\'>";' +
-    'html+="<tr style=\\'background:#1a73e8;color:white;\\'>"' +
-    '+"<th style=\\'padding:6px;text-align:left;\\'>Section</th>"' +
-    '+"<th style=\\'padding:6px;\\'>Avg %</th>"' +
-    '+"<th style=\\'padding:6px;\\'>≥80%</th>"' +
-    '+"<th style=\\'padding:6px;\\'>60–79%</th>"' +
-    '+"<th style=\\'padding:6px;\\'>< 60%</th>"' +
-    '+"<th style=\\'padding:6px;\\'>Students</th></tr>";' +
+    'html+="<h4 style=\'margin:12px 0 4px;color:#333;\'>"+esc(u.unit)+"</h4>";' +
+    'html+="<table style=\'width:100%;border-collapse:collapse;font-size:12px;\'>";' +
+    'html+="<tr style=\'background:#1a73e8;color:white;\'>"' +
+    '+"<th style=\'padding:6px;text-align:left;\'>Section</th>"' +
+    '+"<th style=\'padding:6px;\'>Avg %</th>"' +
+    '+"<th style=\'padding:6px;\'>≥80%</th>"' +
+    '+"<th style=\'padding:6px;\'>60–79%</th>"' +
+    '+"<th style=\'padding:6px;\'>< 60%</th>"' +
+    '+"<th style=\'padding:6px;\'>Students</th></tr>";' +
     'u.sections.forEach(function(s){' +
     'var bg=s.avgPct>=80?"#e6f4ea":s.avgPct>=60?"#fef7e0":"#fce8e6";' +
-    'html+="<tr style=\\'background:"+bg+"\\'>"' +
-    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(s.name)+"</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+s.avgPct+"%</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+s.above80+"</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+s.at60to79+"</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;font-weight:"+(s.below60>0?"bold":"normal")+";color:"+(s.below60>0?"#c5221f":"inherit")+";\\'>"+s.below60+"</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+s.studentCount+"</td></tr>";});' +
+    'html+="<tr style=\'background:"+bg+"\'>"' +
+    '+"<td style=\'padding:4px 6px;border-bottom:1px solid #eee;\'>"+esc(s.name)+"</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\'>"+s.avgPct+"%</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\'>"+s.above80+"</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\'>"+s.at60to79+"</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;font-weight:"+(s.below60>0?"bold":"normal")+";color:"+(s.below60>0?"#c5221f":"inherit")+";\'>"+s.below60+"</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\'>"+s.studentCount+"</td></tr>";});' +
     'html+="</table>";});' +
     'document.getElementById("ddOutput").innerHTML=html;' +
     '}).getSkillDrillDownData(g,t);}' +
@@ -265,20 +265,20 @@ function buildSkillDrillDownHTML_() {
     'var g=document.getElementById("ddGrade").value;' +
     'document.getElementById("ddOutput").innerHTML="<p>Analyzing…</p>";' +
     'google.script.run.withSuccessHandler(function(data){' +
-    'var html="<h4 style=\\'margin:8px 0;color:#ea8600;\\'>Weakest Skills — "+esc(g)+"</h4>";' +
-    'html+="<table style=\\'width:100%;border-collapse:collapse;font-size:12px;\\'>";' +
-    'html+="<tr style=\\'background:#ea8600;color:white;\\'>"' +
-    '+"<th style=\\'padding:6px;text-align:left;\\'>Section</th>"' +
-    '+"<th style=\\'padding:6px;\\'>Avg %</th>"' +
-    '+"<th style=\\'padding:6px;\\'>Units</th>"' +
-    '+"<th style=\\'padding:6px;\\'>Total < 60%</th></tr>";' +
+    'var html="<h4 style=\'margin:8px 0;color:#ea8600;\'>Weakest Skills — "+esc(g)+"</h4>";' +
+    'html+="<table style=\'width:100%;border-collapse:collapse;font-size:12px;\'>";' +
+    'html+="<tr style=\'background:#ea8600;color:white;\'>"' +
+    '+"<th style=\'padding:6px;text-align:left;\'>Section</th>"' +
+    '+"<th style=\'padding:6px;\'>Avg %</th>"' +
+    '+"<th style=\'padding:6px;\'>Units</th>"' +
+    '+"<th style=\'padding:6px;\'>Total < 60%</th></tr>";' +
     'data.forEach(function(s){' +
     'var bg=s.avgPct>=80?"#e6f4ea":s.avgPct>=60?"#fef7e0":"#fce8e6";' +
-    'html+="<tr style=\\'background:"+bg+"\\'>"' +
-    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(s.section)+"</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+s.avgPct+"%</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+s.unitCount+"</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;font-weight:bold;color:#c5221f;\\'>"+s.totalBelow60+"</td></tr>";});' +
+    'html+="<tr style=\'background:"+bg+"\'>"' +
+    '+"<td style=\'padding:4px 6px;border-bottom:1px solid #eee;\'>"+esc(s.section)+"</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\'>"+s.avgPct+"%</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\'>"+s.unitCount+"</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;font-weight:bold;color:#c5221f;\'>"+s.totalBelow60+"</td></tr>";});' +
     'html+="</table>";' +
     'document.getElementById("ddOutput").innerHTML=html;' +
     '}).getWeakestSkillsSummary(g);}' +
