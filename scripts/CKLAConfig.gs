@@ -166,8 +166,8 @@ function isAdmin_() {
     var admins = adminList.split(',').map(function(e) { return e.trim().toLowerCase(); });
     return admins.indexOf(user.toLowerCase()) !== -1;
   } catch (e) {
-    // If we can't determine admin status (e.g., auth issue), allow access
-    return true;
+    // Fail secure: deny access if admin list is configured but check fails
+    return false;
   }
 }
 

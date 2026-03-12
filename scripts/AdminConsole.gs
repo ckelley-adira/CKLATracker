@@ -154,7 +154,7 @@ function createSchoolYearWorkbook(config) {
           newSheet.setName(tabName);
 
           // Only clear on unit / data tabs; avoid derived "Roster" views and "Summary" charts.
-          if (!config.copyRosters && !/Roster|Summary/i.test(tabName)) {
+          if (!config.copyRosters && !/\bRoster\b|\bSummary\b/i.test(tabName)) {
             clearStudentData_(newSheet);
           }
           copiedTabs.push(tabName);
