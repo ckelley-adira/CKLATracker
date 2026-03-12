@@ -68,7 +68,7 @@ function getUnitTabs() {
 
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu('CKLA Tools')
+  var menu = ui.createMenu('CKLA Tools')
     .addItem('Enter Assessment Scores', 'showScoreEntrySidebar')
     .addSeparator()
     .addSubMenu(ui.createMenu('Reports')
@@ -101,8 +101,11 @@ function onOpen() {
       .addItem('Teacher Action Report', 'showTeacherActionReportDialog')
       .addSeparator()
       .addItem('Cohort Comparison Charts', 'showCohortComparisonDialog')
-    )
-    .addSubMenu(ui.createMenu('Phase 4 Admin')
+    );
+
+  // Only show Phase 4 Admin menu to admin users
+  if (isAdmin_()) {
+    menu.addSubMenu(ui.createMenu('Phase 4 Admin')
       .addItem('Admin Console', 'showAdminConsole')
       .addSeparator()
       .addItem('Initialize Audit Trail', 'initAuditTrail')
@@ -111,8 +114,10 @@ function onOpen() {
       .addItem('Clear Audit Log', 'clearAuditLog')
       .addSeparator()
       .addItem('Workbook Split Manager', 'showWorkbookSplitDialog')
-    )
-    .addSeparator()
+    );
+  }
+
+  menu.addSeparator()
     .addItem('About CKLA Tools v' + CKLA_VERSION, 'showAbout')
     .addToUi();
 }
@@ -138,6 +143,46 @@ function showAbout() {
 
 
 // ===================== UTILITY FUNCTIONS =====================
+
+/**
+ * Check if the current user is an admin.
+ * Admin emails are stored in Script Properties under key 'ADMIN_EMAILS'
+ * as a comma-separated list. If no admin list is configured, defaults
+ * to allowing all users (for backward compatibility during initial setup).
+ *
+ * To configure: Run setAdminEmails('admin1@school.org,admin2@school.org')
+ * from the Apps Script editor, or use Script Properties UI.
+ *
+ * @returns {boolean} true if current user is an admin or no allowlist is set
+ */
+function isAdmin_() {
+  try {
+    var adminList = PropertiesService.getScriptProperties().getProperty('ADMIN_EMAILS');
+    if (!adminList) return true; // No allowlist configured — allow all (backward compatible)
+
+    var user = Session.getActiveUser().getEmail();
+    if (!user) return false;
+
+    var admins = adminList.split(',').map(function(e) { return e.trim().toLowerCase(); });
+    return admins.indexOf(user.toLowerCase()) !== -1;
+  } catch (e) {
+    // If we can't determine admin status (e.g., auth issue), allow access
+    return true;
+  }
+}
+
+
+/**
+ * Set the list of admin email addresses for Phase 4 menu access.
+ * Run this function from the Apps Script editor to configure admins.
+ *
+ * @param {string} emails - Comma-separated list of admin email addresses
+ */
+function setAdminEmails(emails) {
+  PropertiesService.getScriptProperties().setProperty('ADMIN_EMAILS', emails);
+  SpreadsheetApp.getUi().alert('Admin list updated. Reload the spreadsheet to apply.');
+}
+
 
 /**
  * Get teachers for a specific grade from the Meta Data tab.

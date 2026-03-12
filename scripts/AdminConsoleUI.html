@@ -29,7 +29,9 @@
   .tab {
     padding: 8px 14px;
     cursor: pointer;
+    border: none;
     border-bottom: 3px solid transparent;
+    background: none;
     color: #5f6368;
     font-size: 12px;
     font-weight: 500;
@@ -177,11 +179,11 @@
 <p class="subtitle">System management and partner onboarding</p>
 
 <!-- Tab navigation -->
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
-  <div class="tab" onclick="switchTab('onboard')">Onboard</div>
-  <div class="tab" onclick="switchTab('partners')">Partners</div>
-  <div class="tab" onclick="switchTab('operations')">Operations</div>
+<div class="tabs" role="tablist">
+  <button class="tab active" role="tab" aria-selected="true" onclick="switchTab('dashboard')">Dashboard</button>
+  <button class="tab" role="tab" aria-selected="false" onclick="switchTab('onboard')">Onboard</button>
+  <button class="tab" role="tab" aria-selected="false" onclick="switchTab('partners')">Partners</button>
+  <button class="tab" role="tab" aria-selected="false" onclick="switchTab('operations')">Operations</button>
 </div>
 
 <!-- Dashboard Panel -->
@@ -264,11 +266,17 @@
 <script>
 // ======================== TAB SWITCHING =====================
 function switchTab(name) {
-  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t) {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
   document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
   // Find the tab by checking text content
   document.querySelectorAll('.tab').forEach(function(t) {
-    if (t.textContent.toLowerCase().indexOf(name.substring(0,4)) !== -1) t.classList.add('active');
+    if (t.textContent.toLowerCase().indexOf(name.substring(0,4)) !== -1) {
+      t.classList.add('active');
+      t.setAttribute('aria-selected', 'true');
+    }
   });
   document.getElementById('panel-' + name).classList.add('active');
 
@@ -327,9 +335,21 @@ function createWorkbook() {
   showMsg('ob-msg', 'info', 'Creating workbook... This may take a moment.');
   google.script.run.withSuccessHandler(function(r) {
     if (r.success) {
-      showMsg('ob-msg', 'success', r.message + ' <a href="' + r.spreadsheetUrl + '" target="_blank">Open workbook</a>');
+      showMsg('ob-msg', 'success', r.message);
+      // Append link safely via DOM
+      if (r.spreadsheetUrl) {
+        var msgContainer = document.getElementById('ob-msg').querySelector('.msg');
+        if (msgContainer) {
+          msgContainer.appendChild(document.createTextNode(' '));
+          var link = document.createElement('a');
+          link.href = r.spreadsheetUrl;
+          link.target = '_blank';
+          link.textContent = 'Open workbook';
+          msgContainer.appendChild(link);
+        }
+      }
     } else {
-      showMsg('ob-msg', 'error', 'Error: ' + r.error);
+      showMsg('ob-msg', 'error', 'Error: ' + (r.error || 'Unknown error'));
     }
   }).withFailureHandler(function(e) {
     showMsg('ob-msg', 'error', e.message);
@@ -389,7 +409,13 @@ function runOp(operation) {
 
 // ======================== HELPERS ===========================
 function showMsg(id, type, msg) {
-  document.getElementById(id).innerHTML = '<div class="msg ' + type + '">' + msg + '</div>';
+  var container = document.getElementById(id);
+  if (!container) return;
+  container.innerHTML = '';
+  var messageEl = document.createElement('div');
+  messageEl.className = 'msg ' + type;
+  messageEl.textContent = msg || '';
+  container.appendChild(messageEl);
 }
 
 function esc(s) {

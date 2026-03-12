@@ -12,8 +12,13 @@
 
 /**
  * Show the Admin Console sidebar.
+ * Restricted to admin users.
  */
 function showAdminConsole() {
+  if (!isAdmin_()) {
+    SpreadsheetApp.getUi().alert('Access Denied', 'The Admin Console is restricted to admin users.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
   var html = HtmlService
     .createHtmlOutputFromFile('AdminConsoleUI')
     .setTitle('Admin Console')
@@ -148,8 +153,8 @@ function createSchoolYearWorkbook(config) {
           var newSheet = sourceSheet.copyTo(newSS);
           newSheet.setName(tabName);
 
-          // Optionally clear student data (keep structure, headers, formulas)
-          if (!config.copyRosters) {
+          // Only clear on unit / data tabs; avoid derived "Roster" views and "Summary" charts.
+          if (!config.copyRosters && !/Roster|Summary/i.test(tabName)) {
             clearStudentData_(newSheet);
           }
           copiedTabs.push(tabName);
@@ -267,13 +272,24 @@ function protectAllSheets() {
     var gradeMap = getUnitTabs();
     var protectedCount = 0;
 
+    var protectionPrefix = 'CKLA Auto-Protection: ';
+
     for (var grade in gradeMap) {
       gradeMap[grade].tabs.forEach(function(tabName) {
         var sheet = ss.getSheetByName(tabName);
         if (!sheet) return;
 
+        // Remove existing auto-created sheet protections to avoid clutter
+        var existingProtections = sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET);
+        existingProtections.forEach(function(p) {
+          var desc = p.getDescription();
+          if (desc && desc.indexOf(protectionPrefix) === 0) {
+            p.remove();
+          }
+        });
+
         // Protect the entire sheet
-        var protection = sheet.protect().setDescription('CKLA Auto-Protection: ' + tabName);
+        var protection = sheet.protect().setDescription(protectionPrefix + tabName);
 
         // Allow editing only in data cells (row DATA_START+, column FIRST_QUESTION+)
         var lastRow = sheet.getLastRow();
@@ -289,8 +305,8 @@ function protectAllSheets() {
           protection.setUnprotectedRanges([editableRange]);
         }
 
-        // Remove all other editors (warning only — requires domain admin)
-        protection.setWarningOnly(true);
+        // Enforce protection (non-data-entry cells locked; editable range remains open)
+        protection.setWarningOnly(false);
         protectedCount++;
       });
     }

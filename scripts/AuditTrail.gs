@@ -38,10 +38,25 @@ function onEditAudit(e) {
     // Don't log edits to the Audit Log itself or Submission Log
     if (sheetName === AUDIT_SHEET_NAME || sheetName === 'Submission Log') return;
 
-    var cell = e.range.getA1Notation();
-    var oldValue = (e.oldValue !== undefined && e.oldValue !== null) ? e.oldValue : '';
-    var newValue = e.range.getValue();
-    if (newValue === undefined || newValue === null) newValue = '';
+    var range = e.range;
+    var cell = range.getA1Notation();
+    var numRows = range.getNumRows();
+    var numCols = range.getNumColumns();
+
+    var oldValue;
+    var newValue;
+
+    if (numRows === 1 && numCols === 1) {
+      // Single-cell edit: preserve existing behavior
+      oldValue = (e.oldValue !== undefined && e.oldValue !== null) ? e.oldValue : '';
+      newValue = range.getValue();
+      if (newValue === undefined || newValue === null) newValue = '';
+    } else {
+      // Multi-cell edit: avoid misleading top-left-only value
+      var summary = '[multi-cell edit: ' + numRows + 'x' + numCols + ' cells]';
+      oldValue = summary;
+      newValue = summary;
+    }
 
     // Get user — requires installable trigger
     var user = '';
@@ -351,7 +366,7 @@ function archiveAuditLog_() {
 
 /**
  * Clear the audit log (with confirmation).
- * Moves all entries to the archive before clearing.
+ * Archives ALL current entries before clearing.
  */
 function clearAuditLog() {
   var ui = SpreadsheetApp.getUi();
@@ -363,15 +378,40 @@ function clearAuditLog() {
 
   if (response !== ui.Button.YES) return;
 
-  archiveAuditLog_();
+  // Archive all entries (not just older ones)
+  archiveAllAuditEntries_();
 
+  ui.alert('Audit log cleared. All entries have been moved to the Audit Archive sheet.');
+}
+
+
+/**
+ * Archive ALL current audit log entries to the archive sheet,
+ * then clear the main Audit Log. Unlike archiveAuditLog_() which
+ * only moves older rows, this moves everything.
+ */
+function archiveAllAuditEntries_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var auditSheet = ss.getSheetByName(AUDIT_SHEET_NAME);
-  if (auditSheet && auditSheet.getLastRow() > 1) {
-    auditSheet.deleteRows(2, auditSheet.getLastRow() - 1);
+  if (!auditSheet || auditSheet.getLastRow() < 2) return;
+
+  var archiveName = 'Audit Archive';
+  var archiveSheet = ss.getSheetByName(archiveName);
+  if (!archiveSheet) {
+    archiveSheet = ss.insertSheet(archiveName);
+    archiveSheet.appendRow(AUDIT_HEADERS);
+    archiveSheet.getRange('1:1').setFontWeight('bold');
+    archiveSheet.hideSheet();
+    ss.moveActiveSheet(ss.getNumSheets());
   }
 
-  ui.alert('Audit log cleared. Entries have been moved to the Audit Archive sheet.');
+  var numRows = auditSheet.getLastRow() - 1; // Exclude header
+  if (numRows > 0) {
+    var data = auditSheet.getRange(2, 1, numRows, AUDIT_HEADERS.length).getValues();
+    var archiveStart = archiveSheet.getLastRow() + 1;
+    archiveSheet.getRange(archiveStart, 1, data.length, AUDIT_HEADERS.length).setValues(data);
+    auditSheet.deleteRows(2, numRows);
+  }
 }
 
 

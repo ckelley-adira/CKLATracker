@@ -372,6 +372,7 @@ function buildWorkbookSplitHTML_() {
     '  google.script.run.withSuccessHandler(renderPreview).withFailureHandler(onError).getSplitPreview();\n' +
     '  google.script.run.withSuccessHandler(renderLinks).getSplitWorkbookIds();\n' +
     '}\n' +
+    'function esc(s) { var d = document.createElement("div"); d.textContent = s || ""; return d.innerHTML; }\n' +
     'function renderPreview(data) {\n' +
     '  var html = "";\n' +
     '  var gradeLabels = { K: "Kindergarten", "1": "Grade 1", "2": "Grade 2" };\n' +
@@ -380,7 +381,7 @@ function buildWorkbookSplitHTML_() {
     '    html += "<div class=\\"grade-card\\"><h3>" + gradeLabels[g] + "</h3>";\n' +
     '    html += "<span class=\\"tab-count\\">" + info.count + " tab(s) detected</span>";\n' +
     '    if (info.count > 0) {\n' +
-    '      html += "<div class=\\"tab-list\\">" + info.tabs.join(", ") + "</div>";\n' +
+    '      html += "<div class=\\"tab-list\\">" + info.tabs.map(esc).join(", ") + "</div>";\n' +
     '      html += "<button onclick=\\"splitGrade(\'" + g + "\')\\">Split Grade " + g + "</button>";\n' +
     '    } else {\n' +
     '      html += "<div class=\\"tab-list\\">(No tabs found for this grade)</div>";\n' +
@@ -388,7 +389,7 @@ function buildWorkbookSplitHTML_() {
     '    html += "</div>";\n' +
     '  });\n' +
     '  if (data.sharedTabs.length > 0) {\n' +
-    '    html += "<p style=\\"font-size:12px;color:#5f6368\\">Shared tabs included in all splits: " + data.sharedTabs.join(", ") + "</p>";\n' +
+    '    html += "<p style=\\"font-size:12px;color:#5f6368\\">Shared tabs included in all splits: " + data.sharedTabs.map(esc).join(", ") + "</p>";\n' +
     '  }\n' +
     '  html += "<hr><button class=\\"btn-secondary\\" onclick=\\"setupImportRange()\\">Configure IMPORTRANGE Links</button>";\n' +
     '  document.getElementById("preview").innerHTML = html;\n' +
