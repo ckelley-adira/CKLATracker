@@ -321,14 +321,14 @@ function buildStudentReportHTML_() {
     '<script>function generate(){var g=document.getElementById("rptGrade").value;' +
     'document.getElementById("rptOutput").innerHTML="Loading...";' +
     'google.script.run.withSuccessHandler(function(data){' +
-    'var html="<table style=\\'width:100%;border-collapse:collapse;font-size:12px\\'>";' +
-    'html+="<tr style=\\'background:#1a73e8;color:white\\'><th style=\\'padding:6px\\'>Student</th>";' +
+    'var html="<table style=\'width:100%;border-collapse:collapse;font-size:12px\'>";' +
+    'html+="<tr style=\'background:#1a73e8;color:white\'><th style=\'padding:6px\'>Student</th>";' +
     'if(data.length>0){data[0].units.forEach(function(u){' +
-    'html+="<th style=\\'padding:6px\\'>"+u.unit.replace(/^(K |Gr\\d )/,"")+"</th>";});}' +
+    'html+="<th style=\'padding:6px\'>"+u.unit.replace(/^(K |Gr\\d )/,"")+"</th>";});}' +
     'html+="</tr>";data.forEach(function(s){' +
-    'html+="<tr><td style=\\'padding:4px 6px;border-bottom:1px solid #eee\\'>"+s.student+"</td>";' +
+    'html+="<tr><td style=\'padding:4px 6px;border-bottom:1px solid #eee\'>"+s.student+"</td>";' +
     's.units.forEach(function(u){var bg=u.pct===null?"#f5f5f5":u.pct>=80?"#e6f4ea":u.pct>=60?"#fef7e0":"#fce8e6";' +
-    'html+="<td style=\\'padding:4px 6px;text-align:center;background:"+bg+";border-bottom:1px solid #eee\\'>"' +
+    'html+="<td style=\'padding:4px 6px;text-align:center;background:"+bg+";border-bottom:1px solid #eee\'>"' +
     '+(u.pct!==null?u.pct+"%":"—")+"</td>";});html+="</tr>";});html+="</table>";' +
     'document.getElementById("rptOutput").innerHTML=html;' +
     '}).getStudentSummaryData(g);}</script></div>';
@@ -369,46 +369,46 @@ function buildStudentProgressHTML_() {
     'var g=document.getElementById("spGrade").value;' +
     'var s=document.getElementById("spStudent").value;' +
     'if(!s){document.getElementById("spOutput").innerHTML=' +
-    '"<p style=\\'color:#c5221f;\\'>Please select a student.</p>";return;}' +
+    '"<p style=\'color:#c5221f;\'>Please select a student.</p>";return;}' +
     'document.getElementById("spOutput").innerHTML="<p>Loading…</p>";' +
     'google.script.run.withSuccessHandler(function(d){' +
     'var h="";' +
     // Student header
-    'h+="<div style=\\'background:#e8f0fe;padding:12px;border-radius:8px;margin-bottom:12px;\\'>";' +
-    'h+="<h4 style=\\'margin:0;color:#1a73e8;\\'>"+esc(d.student)+"</h4>";' +
-    'h+="<p style=\\'margin:4px 0 0;font-size:13px;\\'>Trend: <strong>"+esc(d.trend)+"</strong></p></div>";' +
+    'h+="<div style=\'background:#e8f0fe;padding:12px;border-radius:8px;margin-bottom:12px;\'>";' +
+    'h+="<h4 style=\'margin:0;color:#1a73e8;\'>"+esc(d.student)+"</h4>";' +
+    'h+="<p style=\'margin:4px 0 0;font-size:13px;\'>Trend: <strong>"+esc(d.trend)+"</strong></p></div>";' +
     // Mastery breakdown
     'var mb=d.masteryBreakdown;' +
-    'h+="<div style=\\'display:flex;gap:8px;margin-bottom:12px;text-align:center;font-size:12px;\\'>";' +
-    'h+="<div style=\\'flex:1;background:#e6f4ea;padding:8px;border-radius:6px;\\'>"' +
-    '+"<div style=\\'font-size:20px;font-weight:bold;color:#137333;\\'>"+mb.above80+"</div>Mastery</div>";' +
-    'h+="<div style=\\'flex:1;background:#fef7e0;padding:8px;border-radius:6px;\\'>"' +
-    '+"<div style=\\'font-size:20px;font-weight:bold;color:#856404;\\'>"+mb.at60to79+"</div>Approaching</div>";' +
-    'h+="<div style=\\'flex:1;background:#fce8e6;padding:8px;border-radius:6px;\\'>"' +
-    '+"<div style=\\'font-size:20px;font-weight:bold;color:#c5221f;\\'>"+mb.below60+"</div>Below</div></div>";' +
+    'h+="<div style=\'display:flex;gap:8px;margin-bottom:12px;text-align:center;font-size:12px;\'>";' +
+    'h+="<div style=\'flex:1;background:#e6f4ea;padding:8px;border-radius:6px;\'>"' +
+    '+"<div style=\'font-size:20px;font-weight:bold;color:#137333;\'>"+mb.above80+"</div>Mastery</div>";' +
+    'h+="<div style=\'flex:1;background:#fef7e0;padding:8px;border-radius:6px;\'>"' +
+    '+"<div style=\'font-size:20px;font-weight:bold;color:#856404;\'>"+mb.at60to79+"</div>Approaching</div>";' +
+    'h+="<div style=\'flex:1;background:#fce8e6;padding:8px;border-radius:6px;\'>"' +
+    '+"<div style=\'font-size:20px;font-weight:bold;color:#c5221f;\'>"+mb.below60+"</div>Below</div></div>";' +
     // Visual bar chart
-    'h+="<h4 style=\\'margin:8px 0 4px;color:#333;\\'>Performance by Unit</h4>";' +
+    'h+="<h4 style=\'margin:8px 0 4px;color:#333;\'>Performance by Unit</h4>";' +
     'd.units.forEach(function(u){' +
     'var label=u.unit.replace(/^(K |Gr\\d )/,"");' +
     'var pct=u.pct!==null?u.pct:0;' +
     'var color=u.pct===null?"#ccc":u.pct>=80?"#34a853":u.pct>=60?"#fbbc04":"#ea4335";' +
-    'h+="<div style=\\'margin-bottom:6px;\\'>"' +
-    '+"<div style=\\'display:flex;justify-content:space-between;font-size:12px;\\'>"' +
+    'h+="<div style=\'margin-bottom:6px;\'>"' +
+    '+"<div style=\'display:flex;justify-content:space-between;font-size:12px;\'>"' +
     '+"<span>"+esc(label)+"</span><span>"+(u.pct!==null?u.pct+"%":"—")+"</span></div>"' +
-    '+"<div style=\\'background:#eee;border-radius:4px;height:14px;overflow:hidden;\\'>"' +
-    '+"<div style=\\'background:"+color+";height:100%;width:"+pct+"%;border-radius:4px;\\'></div>"' +
+    '+"<div style=\'background:#eee;border-radius:4px;height:14px;overflow:hidden;\'>"' +
+    '+"<div style=\'background:"+color+";height:100%;width:"+pct+"%;border-radius:4px;\'></div>"' +
     '+"</div></div>";});' +
     // Table view
-    'h+="<h4 style=\\'margin:12px 0 4px;color:#333;\\'>Score Details</h4>";' +
-    'h+="<table style=\\'width:100%;border-collapse:collapse;font-size:12px;\\'>"' +
-    '+"<tr style=\\'background:#1a73e8;color:white;\\'><th style=\\'padding:6px;text-align:left;\\'>Unit</th>"' +
-    '+"<th style=\\'padding:6px;\\'>Score</th><th style=\\'padding:6px;\\'>Level</th></tr>";' +
+    'h+="<h4 style=\'margin:12px 0 4px;color:#333;\'>Score Details</h4>";' +
+    'h+="<table style=\'width:100%;border-collapse:collapse;font-size:12px;\'>"' +
+    '+"<tr style=\'background:#1a73e8;color:white;\'><th style=\'padding:6px;text-align:left;\'>Unit</th>"' +
+    '+"<th style=\'padding:6px;\'>Score</th><th style=\'padding:6px;\'>Level</th></tr>";' +
     'd.units.forEach(function(u){' +
     'var bg=u.pct===null?"#f5f5f5":u.pct>=80?"#e6f4ea":u.pct>=60?"#fef7e0":"#fce8e6";' +
-    'h+="<tr style=\\'background:"+bg+"\\'>"' +
-    '+"<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(u.unit)+"</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+(u.pct!==null?u.pct+"%":"—")+"</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+esc(u.quintile)+"</td></tr>";});' +
+    'h+="<tr style=\'background:"+bg+"\'>"' +
+    '+"<td style=\'padding:4px 6px;border-bottom:1px solid #eee;\'>"+esc(u.unit)+"</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\'>"+(u.pct!==null?u.pct+"%":"—")+"</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\'>"+esc(u.quintile)+"</td></tr>";});' +
     'h+="</table>";' +
     'document.getElementById("spOutput").innerHTML=h;' +
     '}).getIndividualStudentProgress(g,s);}' +

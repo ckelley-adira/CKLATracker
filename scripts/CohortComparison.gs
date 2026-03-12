@@ -226,7 +226,7 @@ function buildCohortComparisonHTML_() {
     'var g=document.getElementById("ccGrade").value;' +
     'var d=document.getElementById("ccDemo").value;' +
     'if(!d){document.getElementById("ccOutput").innerHTML=' +
-    '"<p style=\\'color:#c5221f;\\'>No demographic field selected.</p>";return;}' +
+    '"<p style=\'color:#c5221f;\'>No demographic field selected.</p>";return;}' +
     'document.getElementById("ccOutput").innerHTML="<p>Analyzing cohorts…</p>";' +
     'google.script.run.withSuccessHandler(function(data){' +
     'var h="";' +
@@ -234,43 +234,43 @@ function buildCohortComparisonHTML_() {
     'if(groups.length===0){h="<p>No demographic data found for selected field.</p>";' +
     'document.getElementById("ccOutput").innerHTML=h;return;}' +
     // Legend
-    'h+="<div style=\\'margin-bottom:12px;\\'>";' +
+    'h+="<div style=\'margin-bottom:12px;\'>";' +
     'groups.forEach(function(g,i){' +
-    'h+="<span style=\\'display:inline-block;margin-right:12px;font-size:12px;\\'>"' +
-    '+"<span style=\\'display:inline-block;width:12px;height:12px;background:"+cohortColors[i%cohortColors.length]+";border-radius:2px;margin-right:4px;vertical-align:middle;\\'></span>"' +
+    'h+="<span style=\'display:inline-block;margin-right:12px;font-size:12px;\'>"' +
+    '+"<span style=\'display:inline-block;width:12px;height:12px;background:"+cohortColors[i%cohortColors.length]+";border-radius:2px;margin-right:4px;vertical-align:middle;\'></span>"' +
     '+esc(g)+"</span>";});' +
     'h+="</div>";' +
     // Simple bar chart per unit
-    'h+="<table style=\\'width:100%;border-collapse:collapse;font-size:12px;\\'>";' +
-    'h+="<tr style=\\'background:#1a73e8;color:white;\\'><th style=\\'padding:6px;text-align:left;\\'>Unit</th>";' +
-    'groups.forEach(function(g){h+="<th style=\\'padding:6px;\\'>"+esc(g)+"</th>";});' +
+    'h+="<table style=\'width:100%;border-collapse:collapse;font-size:12px;\'>";' +
+    'h+="<tr style=\'background:#1a73e8;color:white;\'><th style=\'padding:6px;text-align:left;\'>Unit</th>";' +
+    'groups.forEach(function(g){h+="<th style=\'padding:6px;\'>"+esc(g)+"</th>";});' +
     'h+="</tr>";' +
     'if(data.units){data.units.forEach(function(unit,ui){' +
     'h+="<tr>";' +
-    'h+="<td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(unit)+"</td>";' +
+    'h+="<td style=\'padding:4px 6px;border-bottom:1px solid #eee;\'>"+esc(unit)+"</td>";' +
     'groups.forEach(function(g,gi){' +
     'var ua=data.groups[g].unitAvgs[ui];' +
-    'var val=ua&&ua.avgPct!==null?ua.avgPct+"% <span style=\\'font-size:10px;color:#888;\\'>(n="+ua.count+")</span>":"—";' +
+    'var val=ua&&ua.avgPct!==null?ua.avgPct+"% <span style=\'font-size:10px;color:#888;\'>(n="+ua.count+")</span>":"—";' +
     'var bg=ua&&ua.avgPct!==null?(ua.avgPct>=80?"#e6f4ea":ua.avgPct>=60?"#fef7e0":"#fce8e6"):"#f5f5f5";' +
-    'h+="<td style=\\'padding:4px 6px;text-align:center;background:"+bg+";border-bottom:1px solid #eee;\\'>"+val+"</td>";});' +
+    'h+="<td style=\'padding:4px 6px;text-align:center;background:"+bg+";border-bottom:1px solid #eee;\'>"+val+"</td>";});' +
     'h+="</tr>";});}' +
     'h+="</table>";' +
     // Trend summary
-    'h+="<h4 style=\\'margin:12px 0 4px;color:#333;\\'>Trend Summary</h4>";' +
-    'h+="<table style=\\'width:100%;border-collapse:collapse;font-size:12px;\\'>"' +
-    '+"<tr style=\\'background:#555;color:white;\\'><th style=\\'padding:6px;text-align:left;\\'>Group</th>"' +
-    '+"<th style=\\'padding:6px;\\'>First Unit</th><th style=\\'padding:6px;\\'>Last Unit</th>"' +
-    '+"<th style=\\'padding:6px;\\'>Change</th></tr>";' +
+    'h+="<h4 style=\'margin:12px 0 4px;color:#333;\'>Trend Summary</h4>";' +
+    'h+="<table style=\'width:100%;border-collapse:collapse;font-size:12px;\'>"' +
+    '+"<tr style=\'background:#555;color:white;\'><th style=\'padding:6px;text-align:left;\'>Group</th>"' +
+    '+"<th style=\'padding:6px;\'>First Unit</th><th style=\'padding:6px;\'>Last Unit</th>"' +
+    '+"<th style=\'padding:6px;\'>Change</th></tr>";' +
     'groups.forEach(function(g,gi){' +
     'var avgs=data.groups[g].unitAvgs.filter(function(u){return u.avgPct!==null;});' +
-    'if(avgs.length<2){h+="<tr><td style=\\'padding:4px 6px;\\'>"+esc(g)+"</td><td colspan=3 style=\\'text-align:center;\\'>Insufficient data</td></tr>";return;}' +
+    'if(avgs.length<2){h+="<tr><td style=\'padding:4px 6px;\'>"+esc(g)+"</td><td colspan=3 style=\'text-align:center;\'>Insufficient data</td></tr>";return;}' +
     'var first=avgs[0].avgPct;var last=avgs[avgs.length-1].avgPct;var change=last-first;' +
     'var arrow=change>0?"▲":change<0?"▼":"—";' +
     'var color=change>0?"#137333":change<0?"#c5221f":"#555";' +
-    'h+="<tr><td style=\\'padding:4px 6px;border-bottom:1px solid #eee;\\'>"+esc(g)+"</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+first+"%</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\\'>"+last+"%</td>"' +
-    '+"<td style=\\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;color:"+color+";font-weight:bold;\\'>"+arrow+" "+(change>=0?"+":"")+change+"%</td></tr>";});' +
+    'h+="<tr><td style=\'padding:4px 6px;border-bottom:1px solid #eee;\'>"+esc(g)+"</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\'>"+first+"%</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;\'>"+last+"%</td>"' +
+    '+"<td style=\'padding:4px 6px;text-align:center;border-bottom:1px solid #eee;color:"+color+";font-weight:bold;\'>"+arrow+" "+(change>=0?"+":"")+change+"%</td></tr>";});' +
     'h+="</table>";' +
     'document.getElementById("ccOutput").innerHTML=h;' +
     '}).getCohortComparisonData(g,d);}' +
